@@ -168,13 +168,13 @@ public final class Constants {
     //TODO: Update values
     public static final double kMaxHeight = 2.5; // Meters
     public static final double kMinHeight = 0; // Meters
-    public static final double kRotationToHeightRatio = -32.0/kMaxHeight; // Rotations to meters
+    public static final double kRotationToHeightRatio = -kMaxHeight/35.0; // Rotations to meters
     public static final double kPositionEpsilon = 0.2;
 
     public static final double kMotorRampRate = 0.0;
     public static final int kMototCurrentLimit = 40;
 
-    public static final double kP = 0;
+    public static final double kP = 0.2;
     public static final double kI = 0;
     public static final double kD = 0;
   }

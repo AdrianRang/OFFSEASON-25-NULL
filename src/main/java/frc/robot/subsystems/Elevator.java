@@ -78,8 +78,7 @@ public class Elevator extends SubsystemBase {
     this.rightMotorConfig = new SparkFlexConfig();
     this.rightMotorConfig
       .idleMode(IdleMode.kBrake)
-      .follow(leftMotorId)
-      .inverted(true)
+      .follow(leftMotorId, true)
       .openLoopRampRate(kMotorRampRate)
       .closedLoopRampRate(kMotorRampRate)
       .smartCurrentLimit(kMototCurrentLimit);
@@ -117,14 +116,14 @@ public class Elevator extends SubsystemBase {
     if(position > kMaxHeight || position < kMinHeight) return;
 
     setpoint = position;
-    pid.setReference(position*kRotationToHeightRatio, ControlType.kPosition);
+    pid.setReference(position/kRotationToHeightRatio, ControlType.kPosition);
   }
 
   /**
    * @return True if the position is within epsilon of the setpoint
    */
   public boolean isAtPosition() {
-    return Math.abs(getPosition() - encoder.getPosition()) < kPositionEpsilon;
+    return Math.abs(getPosition() - encoder.getPosition() * kRotationToHeightRatio) < kPositionEpsilon;
   }
 
   public Command setPostitionCommand(double position) {

@@ -100,6 +100,7 @@ public class RobotContainer {
     SmartDashboard.putData("AutoChooser", m_autonomousChooser);
 
     SmartDashboard.putData("Chassis/ResetTurningEncoders", new InstantCommand(chassis::resetTurningEncoders).ignoringDisable(true));
+    SmartDashboard.putData("Elevator/ResetEncoder", new InstantCommand(elevator::resetEncoder).ignoringDisable(true));
 
     // Configure the trigger bindings
     configureBindings();
@@ -109,7 +110,7 @@ public class RobotContainer {
     DRIVER.topButton().whileTrue(elevator.setPostitionCommand(2.4));
     DRIVER.leftButton().whileTrue(elevator.setPostitionCommand(1.5));
     DRIVER.bottomButton().whileTrue(elevator.setPostitionCommand(0.5));
-<
+
     this.chassis.setDefaultCommand(new DriveSwerve(
         chassis,
         () -> -DRIVER.getLeftY(),
@@ -119,7 +120,7 @@ public class RobotContainer {
       )
     );
 
-    this.elevator.setDefaultCommand(elevator.setPostitionCommand(0));
+    this.elevator.setDefaultCommand(elevator.setPostitionCommand(0.15));
   }
 
   /**
