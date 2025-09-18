@@ -8,6 +8,8 @@ import java.util.function.Supplier;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Servo extends SubsystemBase {
@@ -17,6 +19,9 @@ public class Servo extends SubsystemBase {
   private Supplier<Double> measurementSupplier;
   private double setpoint;
   private final BlueShiftMotor[] motors;
+
+  private double min = -Double.MAX_VALUE;
+  private double max = Double.MIN_VALUE;
 
   /**
    * Creates a new Servo class
@@ -55,6 +60,25 @@ public class Servo extends SubsystemBase {
 
   public void setMeasurementSupplier(Supplier<Double> supplier) {
     this.measurementSupplier = supplier;
+  }
+
+  public BlueShiftMotor[] getMotors() {
+    return motors;
+  }
+
+  public void setLimits(double min, double max) {
+    this.min = min;
+    this.max = max;
+  }
+
+  public void setSetpoint(double position) {
+    // if(position > max || position < min) return;
+
+    pidController.setSetpoint(Math.min(max, Math.max(min, position)));
+  }
+
+  public Command setSetpointCommand(double position) {
+    return new InstantCommand(()->setSetpoint(position), this);
   }
 
   @Override

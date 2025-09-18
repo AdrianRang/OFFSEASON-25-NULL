@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
 import static frc.robot.Constants.ElevatorConstants.*;
 
 public class Elevator extends SubsystemBase {
@@ -61,7 +62,7 @@ public class Elevator extends SubsystemBase {
   private final RelativeEncoder encoder;
   private final SparkClosedLoopController pid;
 
-  private double setpoint; 
+  private ElevatorPosition position; 
 
   /** Creates a new Elevator. */
   public Elevator() {
@@ -81,7 +82,8 @@ public class Elevator extends SubsystemBase {
       .follow(leftMotorId, true)
       .openLoopRampRate(kMotorRampRate)
       .closedLoopRampRate(kMotorRampRate)
-      .smartCurrentLimit(kMototCurrentLimit);
+      .smartCurrentLimit(kMototCurrentLimit)
+      .encoder.positionConversionFactor(kRotationToHeightRatio);
     
     this.leftMotorConfig.closedLoop
       .p(kP)
@@ -105,29 +107,39 @@ public class Elevator extends SubsystemBase {
    * @return The position in meters
    */
   public double getPosition() {
-    return encoder.getPosition() * kRotationToHeightRatio;
+    return encoder.getPosition();
   }
 
   /**
    * Sets the goal position for the elevator
    * @param position The setpoint position of the elevator in meters
    */
-  public void setPosition(double position) {
+  private void setPosition(double position) {
     if(position > kMaxHeight || position < kMinHeight) return;
 
-    setpoint = position;
-    pid.setReference(position/kRotationToHeightRatio, ControlType.kPosition);
+    pid.setReference(position, ControlType.kPosition);
+  }
+
+  public void setPosition(ElevatorPosition position) {
+    double meters = position.getPosition();
+
+    this.position = position;
+    setPosition(meters);
   }
 
   /**
    * @return True if the position is within epsilon of the setpoint
    */
   public boolean isAtPosition() {
-    return Math.abs(getPosition() - encoder.getPosition() * kRotationToHeightRatio) < kPositionEpsilon;
+    return Math.abs(position.getPosition() - getPosition()) < kPositionEpsilon;
   }
 
-  public Command setPostitionCommand(double position) {
+  public Command setPostitionCommand(ElevatorPosition position) {
     return new RunCommand(()->setPosition(position), this);
+  }
+
+  public Command setPostitionWaitCommand(ElevatorPosition position) {
+    return new RunCommand(()->setPosition(position), this).until(this::isAtPosition);
   }
 
   public void stop() {
@@ -139,6 +151,6 @@ public class Elevator extends SubsystemBase {
     SmartDashboard.putNumber("Elevator/RawPosition", encoder.getPosition());
     SmartDashboard.putNumber("Elevator/Postition", getPosition());
     SmartDashboard.putBoolean("Elevator/IsAtPosition", isAtPosition());
-    SmartDashboard.putNumber("Elevator/setpoint", setpoint);
+    SmartDashboard.putNumber("Elevator/setpoint", position.getPosition());
   }
 }

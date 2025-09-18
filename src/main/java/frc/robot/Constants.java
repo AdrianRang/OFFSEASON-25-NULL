@@ -174,9 +174,49 @@ public final class Constants {
     public static final double kMotorRampRate = 0.0;
     public static final int kMototCurrentLimit = 40;
 
+    public static final double kBumpZone = 0.2;
+
     public static final double kP = 0.2;
     public static final double kI = 0;
     public static final double kD = 0;
+  }
+
+  public static final class ArmConstants {
+    // TODO UPDATE
+    public static final int kMotorId = 32;
+    public static final double kMotorRampRate = 0;
+    public static final int kMotorCurrentLimit = 40;
+    public static final double kConversionFactor = 20;
+
+    public static final double kMin = 0;
+    public static final double kMax = 180;
+
+    public static final double kP = 0;
+    public static final double kI = 0;
+    public static final double kD = 0;
+  }
+
+  public static final class EndEffectorConstants {
+    public static final int kCoralMotorID = 30;
+    public static final int kAlgeaMotorID = 31;
+    public static final int kCoralSwitchID = 0;
+
+    public static final class CoralConstants {
+      public static final double intakeSpeed = -0.8;
+      public static final double outakeSpeed = 0.5;
+
+      public static final int currentLimit = 40;
+    }
+
+    public static final class AlgeaConstants {
+      public static final double intakeSpeed = -0.8;
+      public static final double holdSpeed = -0.1;
+      public static final double outakeSpeed = 0.5;
+
+      public static final double checkCurrent = 30;
+
+      public static final int currentLimit = 40;
+    }
   }
 
   public static final double startupStatusSignalTimeout = 20;

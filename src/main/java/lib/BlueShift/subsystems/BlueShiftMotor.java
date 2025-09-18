@@ -106,4 +106,9 @@ public class BlueShiftMotor extends SubsystemBase {
   public Command setVolageCommand(double voltage) {
     return runOnce(()->setVoltage(voltage));
   }
+
+  public SparkFlex getVortex() {
+    if(type == MotorType.NEO_VORTEX) return neo_vortex;
+    else throw new Error(getName() + " is not a Vortex");
+  }
 }

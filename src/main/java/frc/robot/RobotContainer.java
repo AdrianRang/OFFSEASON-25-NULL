@@ -9,6 +9,7 @@ import frc.robot.commands.DriveSwerve;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.SwerveChassis;
 import frc.robot.subsystems.SwerveModule;
+import frc.robot.subsystems.Elevator.ElevatorPosition;
 import frc.robot.subsystems.Gyro.Gyro;
 import frc.robot.subsystems.Gyro.GyroIOPigeon;
 import lib.Elastic;
@@ -60,7 +61,7 @@ public class RobotContainer {
       new SwerveModule(Constants.SwerveModuleConstants.kBackRightOptions),
       new Gyro(new GyroIOPigeon(Constants.SwerveChassisConstants.kGyroDevice))
     );
-
+    
     this.elevator = new Elevator();
 
     this.m_limelight3G = new LimelightOdometryCamera("limelight_threeg", false, true, VisionOdometryFilters::visionFilter);
@@ -107,9 +108,9 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    DRIVER.topButton().whileTrue(elevator.setPostitionCommand(2.4));
-    DRIVER.leftButton().whileTrue(elevator.setPostitionCommand(1.5));
-    DRIVER.bottomButton().whileTrue(elevator.setPostitionCommand(0.5));
+    DRIVER.topButton().whileTrue(elevator.setPostitionCommand(ElevatorPosition.L1));
+    DRIVER.leftButton().whileTrue(elevator.setPostitionCommand(ElevatorPosition.L2));
+    DRIVER.bottomButton().whileTrue(elevator.setPostitionCommand(ElevatorPosition.L3));
 
     this.chassis.setDefaultCommand(new DriveSwerve(
         chassis,
@@ -120,7 +121,7 @@ public class RobotContainer {
       )
     );
 
-    this.elevator.setDefaultCommand(elevator.setPostitionCommand(0.15));
+    this.elevator.setDefaultCommand(elevator.setPostitionCommand(ElevatorPosition.HOME));
   }
 
   /**
