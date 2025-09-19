@@ -186,7 +186,7 @@ public final class Constants {
     public static final int kMotorId = 32;
     public static final double kMotorRampRate = 0;
     public static final int kMotorCurrentLimit = 40;
-    public static final double kConversionFactor = 20;
+    public static final double kConversionFactor = 1 / 20; // Gearbox reduction + sprocket ratio (20:1 * 1:1)
 
     public static final double kMin = 0;
     public static final double kMax = 180;
@@ -194,6 +194,8 @@ public final class Constants {
     public static final double kP = 0;
     public static final double kI = 0;
     public static final double kD = 0;
+
+    public static final int kAbsoluteEncoderId = 33;
   }
 
   public static final class EndEffectorConstants {

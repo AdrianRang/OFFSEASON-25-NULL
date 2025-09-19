@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.hardware.CANcoder;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkFlex;
@@ -14,11 +15,14 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Rotations;
 import static frc.robot.Constants.ArmConstants.*;
 import static frc.robot.Constants.ElevatorConstants.kPositionEpsilon;
 
 import java.util.function.Supplier;
 
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -47,6 +51,8 @@ public class Arm extends SubsystemBase {
   private final SparkClosedLoopController pid;
   private final RelativeEncoder encoder;
 
+  private final CANcoder absoluteEncoder;
+
   private final Supplier<Elevator.ElevatorPosition> elevatorPosition;
 
   private ArmPosition currentPosition = ArmPosition.IDLE;
@@ -62,24 +68,31 @@ public class Arm extends SubsystemBase {
       .smartCurrentLimit(kMotorCurrentLimit)
       .closedLoop.pid(kP, kI, kD);
     motorConfig.encoder.positionConversionFactor(kConversionFactor);
-
     motor.configure(motorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+
+    absoluteEncoder = new CANcoder(kAbsoluteEncoderId);
 
     elevatorPosition = positionSupplier;
 
     encoder = motor.getEncoder();
     pid = motor.getClosedLoopController();
+
+    encoder.setPosition(getAbsolutePosition().in(Rotations));
   }
 
   private void setPosition(double position) {
     if(position > kMax || position < kMin) return;
-
     pid.setReference(position, ControlType.kPosition);
   }
 
-  public void setPosition(ArmPosition position) {
-    if(elevatorPosition.get() == ElevatorPosition.INTAKE && position == ArmPosition.INTAKE) return;
+  public Angle getAbsolutePosition() {
+    return absoluteEncoder.getAbsolutePosition().refresh().getValue();
+  }
 
+  public void setPosition(ArmPosition position) {
+    // TODO: Check the actual encoder value, instead of the setpoint position
+    // TODO: Schedule command after the elevator position goes below a certain threshold
+    if(elevatorPosition.get() == ElevatorPosition.INTAKE && position == ArmPosition.INTAKE) return;
     currentPosition = position;
     setPosition(position.getPosition());
   }
@@ -104,6 +117,7 @@ public class Arm extends SubsystemBase {
   public void periodic() {
     if(elevatorPosition.get() != ElevatorPosition.INTAKE && currentPosition == ArmPosition.INTAKE) setPosition(ArmPosition.IDLE);
 
-    SmartDashboard.putNumber("Arm/position", encoder.getPosition());
+    SmartDashboard.putNumber("Arm/MotEncPositionDeg", encoder.getPosition() * 360);
+    SmartDashboard.putNumber("Arm/AbsEncPosition", getAbsolutePosition().in(Degrees));
   }
 }
