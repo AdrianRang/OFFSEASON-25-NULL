@@ -13,7 +13,6 @@ import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
-
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -23,7 +22,9 @@ import static frc.robot.Constants.ElevatorConstants.*;
 
 public class Elevator extends SubsystemBase {
   public static enum  ElevatorPosition {
-    // TODO:
+    // TODO: Update these values
+    ZERO(0.0),
+    
 		L1(0.5),
 
 		L2(0.7), 
@@ -62,19 +63,21 @@ public class Elevator extends SubsystemBase {
   private final RelativeEncoder encoder;
   private final SparkClosedLoopController pid;
 
-  private ElevatorPosition position; 
+  private ElevatorPosition position = ElevatorPosition.ZERO; 
 
   /** Creates a new Elevator. */
   public Elevator() {
     this.leftMotor = new SparkFlex(leftMotorId, MotorType.kBrushless);
     this.rightMotor = new SparkFlex(rightMotorId, MotorType.kBrushless);
-
+    
+    // ! MASTER
     this.leftMotorConfig = new SparkFlexConfig();
     this.leftMotorConfig
       .idleMode(IdleMode.kBrake)
       .openLoopRampRate(kMotorRampRate)
       .closedLoopRampRate(kMotorRampRate)
-      .smartCurrentLimit(kMototCurrentLimit);
+      .smartCurrentLimit(kMototCurrentLimit)
+      .voltageCompensation(12);
     
     this.rightMotorConfig = new SparkFlexConfig();
     this.rightMotorConfig
@@ -83,7 +86,7 @@ public class Elevator extends SubsystemBase {
       .openLoopRampRate(kMotorRampRate)
       .closedLoopRampRate(kMotorRampRate)
       .smartCurrentLimit(kMototCurrentLimit)
-      .encoder.positionConversionFactor(kRotationToHeightRatio);
+      .voltageCompensation(12);
     
     this.leftMotorConfig.closedLoop
       .p(kP)
@@ -94,7 +97,6 @@ public class Elevator extends SubsystemBase {
     this.rightMotor.configure(rightMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
 
     this.encoder = leftMotor.getEncoder();
-
     this.pid = leftMotor.getClosedLoopController();
   }
 
@@ -106,8 +108,12 @@ public class Elevator extends SubsystemBase {
    * Gets the position of the elevator
    * @return The position in meters
    */
-  public double getPosition() {
+  public double getEncoderPosition() {
     return encoder.getPosition();
+  }
+
+  public ElevatorPosition getPosition() {
+    return position;
   }
 
   /**
@@ -122,7 +128,6 @@ public class Elevator extends SubsystemBase {
 
   public void setPosition(ElevatorPosition position) {
     double meters = position.getPosition();
-
     this.position = position;
     setPosition(meters);
   }
@@ -131,7 +136,7 @@ public class Elevator extends SubsystemBase {
    * @return True if the position is within epsilon of the setpoint
    */
   public boolean isAtPosition() {
-    return Math.abs(position.getPosition() - getPosition()) < kPositionEpsilon;
+    return Math.abs(position.getPosition() - getEncoderPosition()) < kPositionEpsilon;
   }
 
   public Command setPostitionCommand(ElevatorPosition position) {
@@ -149,8 +154,11 @@ public class Elevator extends SubsystemBase {
   @Override
   public void periodic() {
     SmartDashboard.putNumber("Elevator/RawPosition", encoder.getPosition());
-    SmartDashboard.putNumber("Elevator/Postition", getPosition());
+    SmartDashboard.putNumber("Elevator/Postition", getEncoderPosition());
     SmartDashboard.putBoolean("Elevator/IsAtPosition", isAtPosition());
     SmartDashboard.putNumber("Elevator/setpoint", position.getPosition());
+
+    SmartDashboard.putNumber("Elevator/LAppliedOutput", leftMotor.getAppliedOutput());
+    SmartDashboard.putNumber("Elevator/RAppliedOutput", rightMotor.getAppliedOutput());
   }
 }

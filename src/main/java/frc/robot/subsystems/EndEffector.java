@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants.EndEffectorConstants.AlgeaConstants;
+import frc.robot.Constants.EndEffectorConstants.CoralConstants;
 
 public class EndEffector extends SubsystemBase {
   private final SparkMax coralMotor;
@@ -35,12 +36,14 @@ public class EndEffector extends SubsystemBase {
     coralMotor = new SparkMax(kCoralMotorID, MotorType.kBrushless);
     coralConfig = new SparkMaxConfig();
     coralConfig
+      .voltageCompensation(12)
       .idleMode(IdleMode.kBrake)
       .smartCurrentLimit(CoralConstants.currentLimit);
 
     algaeMotor = new SparkMax(kAlgeaMotorID, MotorType.kBrushless);
     algaeConfig = new SparkMaxConfig();
     algaeConfig
+      .voltageCompensation(12)
       .idleMode(IdleMode.kBrake)
       .smartCurrentLimit(AlgeaConstants.currentLimit);
 
@@ -54,7 +57,7 @@ public class EndEffector extends SubsystemBase {
     algaeMotor.set(AlgeaConstants.intakeSpeed);
   }
 
-  public void holdAlgea() {
+  public void holdAlgae() {
     algaeMotor.set(AlgeaConstants.holdSpeed);
   }
 
@@ -62,7 +65,7 @@ public class EndEffector extends SubsystemBase {
     algaeMotor.set(AlgeaConstants.outakeSpeed);
   }
 
-  public void stopAlgea() {
+  public void stopAlgae() {
     algaeMotor.set(0);
   }
 
@@ -87,19 +90,29 @@ public class EndEffector extends SubsystemBase {
   }
 
   public Command intakeCoralCommand() {
-    return new InstantCommand(this::intakeCoral).until(this::getCoral).andThen(this::stopCoral);
+    return new InstantCommand(this::intakeCoral)
+      .until(this::getCoral)
+      .andThen(this::stopCoral);
   }
 
   public Command outakeCoralCommand() {
-    return new InstantCommand(this::outakeCoral).until(()->!getCoral()).andThen(new WaitCommand(0.2)).andThen(this::stopCoral);
+    return new InstantCommand(this::outakeCoral)
+      .until(()->!getCoral())
+      .andThen(new WaitCommand(0.2))
+      .andThen(this::stopCoral);
   }
 
   public Command intakeAlgeaCommand() {
-    return new InstantCommand(this::intakeAlgae).until(this::getAlgae).andThen(this::holdAlgea);
+    return new InstantCommand(this::intakeAlgae)
+      .until(this::getAlgae)
+      .andThen(this::holdAlgae);
   }
 
   public Command outakeAlgeaCommand() {
-    return new InstantCommand(this::outakeAlgae).until(()->!getAlgae()).andThen(new WaitCommand(0.2)).andThen(this::stopAlgea);
+    return new InstantCommand(this::outakeAlgae)
+      .until(()->!getAlgae())
+      .andThen(new WaitCommand(0.2))
+      .andThen(this::stopAlgae);
   }
 
   @Override

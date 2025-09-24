@@ -11,6 +11,10 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
+import frc.robot.subsystems.Arm;
+import frc.robot.subsystems.Elevator;
+import frc.robot.subsystems.Elevator.ElevatorPosition;
+import frc.robot.subsystems.Arm.ArmPosition;
 import lib.BlueShift.constants.CTRECANDevice;
 import lib.BlueShift.constants.PIDFConstants;
 import lib.BlueShift.constants.SwerveModuleOptions;
@@ -168,7 +172,8 @@ public final class Constants {
     //TODO: Update values
     public static final double kMaxHeight = 2.5; // Meters
     public static final double kMinHeight = 0; // Meters
-    public static final double kRotationToHeightRatio = -kMaxHeight/35.0; // Rotations to meters
+    //! Encoders cannot have negative conversion factors, the motor has to be inverted so the value is inverted
+    public static final double kRotationToHeightRatio = kMaxHeight/35.0; // Rotations to meters
     public static final double kPositionEpsilon = 0.2;
 
     public static final double kMotorRampRate = 0.0;
@@ -182,11 +187,11 @@ public final class Constants {
   }
 
   public static final class ArmConstants {
+    public static final int kMotorId = 17;
     // TODO UPDATE
-    public static final int kMotorId = 32;
     public static final double kMotorRampRate = 0;
     public static final int kMotorCurrentLimit = 40;
-    public static final double kConversionFactor = 1 / 20; // Gearbox reduction + sprocket ratio (20:1 * 1:1)
+    public static final double kConversionFactor = 1.0 / 20.0 / 4.0; // Gearbox reduction + sprocket ratio (20:1 * 1:1)
 
     public static final double kMin = 0;
     public static final double kMax = 180;
@@ -195,7 +200,7 @@ public final class Constants {
     public static final double kI = 0;
     public static final double kD = 0;
 
-    public static final int kAbsoluteEncoderId = 33;
+    public static final int kAbsoluteEncoderId = 45;
   }
 
   public static final class EndEffectorConstants {
@@ -219,6 +224,23 @@ public final class Constants {
 
       public static final int currentLimit = 40;
     }
+  }
+
+  public static enum RobotState {
+    L1(ArmPosition.PLACE_L1, Elevator.ElevatorPosition.L1),
+    L2(ArmPosition.PLACE, Elevator.ElevatorPosition.L2),
+    L3(ArmPosition.PLACE, Elevator.ElevatorPosition.L3);
+    
+    private ArmPosition armPosition;
+    private ElevatorPosition elevatorPosition;
+
+    private RobotState(ArmPosition armPosition, ElevatorPosition elevatorPosition) {
+      this.armPosition = armPosition;
+      this.elevatorPosition = elevatorPosition;
+    }
+
+    public ArmPosition getArmPosition() {return armPosition;}
+    public ElevatorPosition getElevatorPosition() {return elevatorPosition;}
   }
 
   public static final double startupStatusSignalTimeout = 20;

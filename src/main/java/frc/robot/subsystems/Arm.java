@@ -31,10 +31,11 @@ import frc.robot.subsystems.Elevator.ElevatorPosition;
 
 public class Arm extends SubsystemBase {
   public static enum ArmPosition {
+    // TODO: CHANGE THESE
     INTAKE(180),
     IDLE(150),
-    LLOW(40),
-    L4(90),
+    PLACE_L1(70),
+    PLACE(90),
     NET(10);
 
     private double position;
@@ -66,8 +67,9 @@ public class Arm extends SubsystemBase {
       .openLoopRampRate(kMotorRampRate)
       .closedLoopRampRate(kMotorRampRate)
       .smartCurrentLimit(kMotorCurrentLimit)
-      .closedLoop.pid(kP, kI, kD);
+      .voltageCompensation(12);
     motorConfig.encoder.positionConversionFactor(kConversionFactor);
+    motorConfig.closedLoop.pid(kP, kI, kD);
     motor.configure(motorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
 
     absoluteEncoder = new CANcoder(kAbsoluteEncoderId);
@@ -119,5 +121,6 @@ public class Arm extends SubsystemBase {
 
     SmartDashboard.putNumber("Arm/MotEncPositionDeg", encoder.getPosition() * 360);
     SmartDashboard.putNumber("Arm/AbsEncPosition", getAbsolutePosition().in(Degrees));
+    SmartDashboard.putNumber("Arm/AppliedOutput", motor.getAppliedOutput());
   }
 }
