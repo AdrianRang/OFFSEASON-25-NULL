@@ -102,13 +102,13 @@ public class EndEffector extends SubsystemBase {
       .andThen(this::stopCoral);
   }
 
-  public Command intakeAlgeaCommand() {
+  public Command intakeAlgaeCommand() {
     return new InstantCommand(this::intakeAlgae)
       .until(this::getAlgae)
       .andThen(this::holdAlgae);
   }
 
-  public Command outakeAlgeaCommand() {
+  public Command outakeAlgaeCommand() {
     return new InstantCommand(this::outakeAlgae)
       .until(()->!getAlgae())
       .andThen(new WaitCommand(0.2))

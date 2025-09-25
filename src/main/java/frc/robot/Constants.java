@@ -4,8 +4,13 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.controller.ArmFeedforward;
+import edu.wpi.first.math.controller.ElevatorFeedforward;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
@@ -45,6 +50,7 @@ import com.pathplanner.lib.path.PathConstraints;
 public final class Constants {
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
+    public static final int kOperatorControllerPort = 1;
     public static final double kDeadband = 0.05;
   }
 
@@ -167,45 +173,69 @@ public final class Constants {
 
   public static final class ElevatorConstants {
     public static final int leftMotorId = 57;
-    public static final int rightMotorId = 30;
+    public static final int rightMotorId = 58;
+    public static final double kMotorRampRate = 0.0;
+    public static final int kMototCurrentLimit = 40;
 
     //TODO: Update values
     public static final double kMaxHeight = 2.5; // Meters
     public static final double kMinHeight = 0; // Meters
     //! Encoders cannot have negative conversion factors, the motor has to be inverted so the value is inverted
-    public static final double kRotationToHeightRatio = kMaxHeight/35.0; // Rotations to meters
+    public static final double kRotationToHeightRatio = kMaxHeight / 35.0; // Rotations to meters
     public static final double kPositionEpsilon = 0.2;
 
-    public static final double kMotorRampRate = 0.0;
-    public static final int kMototCurrentLimit = 40;
 
     public static final double kBumpZone = 0.2;
 
-    public static final double kP = 0.2;
-    public static final double kI = 0;
-    public static final double kD = 0;
+    // PID controller
+    public static final ProfiledPIDController pidController = new ProfiledPIDController(
+      0.2,
+      0.0,
+      0.0,
+      new TrapezoidProfile.Constraints(5, 10)
+    );
+
+    // Feedforward
+    // TODO: CAREFULY CHECK THE BEHAVIOR OF THE ELEVATOR WITH FF
+    // TODO: Tune kS manually, to tune it, set all other values to 0, then slowly increase the value until the elevator moves ever so slightly
+    // Calculated with: https://www.reca.lc/linear?angle=%7B%22s%22%3A90%2C%22u%22%3A%22deg%22%7D&currentLimit=%7B%22s%22%3A40%2C%22u%22%3A%22A%22%7D&efficiency=90&limitAcceleration=0&limitDeceleration=0&limitVelocity=0&limitedAcceleration=%7B%22s%22%3A400%2C%22u%22%3A%22in%2Fs2%22%7D&limitedDeceleration=%7B%22s%22%3A50%2C%22u%22%3A%22in%2Fs2%22%7D&limitedVelocity=%7B%22s%22%3A10%2C%22u%22%3A%22in%2Fs%22%7D&load=%7B%22s%22%3A20%2C%22u%22%3A%22lbs%22%7D&motor=%7B%22quantity%22%3A2%2C%22name%22%3A%22NEO%20Vortex%2A%22%7D&ratio=%7B%22magnitude%22%3A20%2C%22ratioType%22%3A%22Reduction%22%7D&spoolDiameter=%7B%22s%22%3A1%2C%22u%22%3A%22in%22%7D&travelDistance=%7B%22s%22%3A2.5%2C%22u%22%3A%22m%22%7D
+    public static final ElevatorFeedforward feedforward = new ElevatorFeedforward(0.0, 0.08, 26.60);
   }
 
   public static final class ArmConstants {
+    // CAN IDs
     public static final int kMotorId = 17;
-    // TODO UPDATE
+    public static final int kAbsoluteEncoderId = 45;
+    
+    // Motor config
     public static final double kMotorRampRate = 0;
     public static final int kMotorCurrentLimit = 40;
-    public static final double kConversionFactor = 1.0 / 20.0 / 4.0; // Gearbox reduction + sprocket ratio (20:1 * 1:1)
+    public static final double kConversionFactor = 1.0 / 20.0 / 4.0; // Gearbox reduction + sprocket ratio (20:1 * 4:1)
 
-    public static final double kMin = 0;
-    public static final double kMax = 180;
+    // Angle limits
+    public static final Angle kMin = Degrees.of(15);
+    public static final Angle kMax = Degrees.of(250);
 
-    public static final double kP = 0;
-    public static final double kI = 0;
-    public static final double kD = 0;
+    // PID controller
+    public static final ProfiledPIDController pidController = new ProfiledPIDController(
+      0.1,
+      0.0,
+      0.0,
+      new TrapezoidProfile.Constraints(5, 2)
+    );
 
-    public static final int kAbsoluteEncoderId = 45;
+    // Feedforward
+    // Calculated with: https://www.reca.lc/arm?armMass=%7B%22s%22%3A15%2C%22u%22%3A%22lbs%22%7D&comLength=%7B%22s%22%3A17%2C%22u%22%3A%22in%22%7D&currentLimit=%7B%22s%22%3A40%2C%22u%22%3A%22A%22%7D&efficiency=90&endAngle=%7B%22s%22%3A180%2C%22u%22%3A%22deg%22%7D&iterationLimit=10000&motor=%7B%22quantity%22%3A1%2C%22name%22%3A%22NEO%20Vortex%2A%22%7D&ratio=%7B%22magnitude%22%3A80%2C%22ratioType%22%3A%22Reduction%22%7D&startAngle=%7B%22s%22%3A0%2C%22u%22%3A%22deg%22%7D
+    // TODO: CAREFULY CHECK THE BEHAVIOR OF THE ARM WITH FF
+    // ! KV seems high, check it
+    public static final ArmFeedforward feedforward = new ArmFeedforward(0.0, 1.08, 8.49 / (2 * Math.PI));
+
+  
   }
 
   public static final class EndEffectorConstants {
-    public static final int kCoralMotorID = 30;
-    public static final int kAlgeaMotorID = 31;
+    public static final int kCoralMotorID = 50;
+    public static final int kAlgeaMotorID = 51;
     public static final int kCoralSwitchID = 0;
 
     public static final class CoralConstants {
@@ -227,7 +257,8 @@ public final class Constants {
   }
 
   public static enum RobotState {
-    L1(ArmPosition.PLACE_L1, Elevator.ElevatorPosition.L1),
+    HOME(ArmPosition.IDLE, ElevatorPosition.HOME),
+    L1(ArmPosition.PLACE, Elevator.ElevatorPosition.L1),
     L2(ArmPosition.PLACE, Elevator.ElevatorPosition.L2),
     L3(ArmPosition.PLACE, Elevator.ElevatorPosition.L3);
     

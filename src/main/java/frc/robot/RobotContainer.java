@@ -1,7 +1,3 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot;
 
 import frc.robot.Constants.SwerveChassisConstants;
@@ -34,6 +30,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -44,6 +41,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 public class RobotContainer {
   // * Controllers
   private final CustomController DRIVER = new CustomController(Constants.OperatorConstants.kDriverControllerPort, CustomControllerType.XBOX, Constants.OperatorConstants.kDeadband, 1);
+  private final CustomController OPERATOR = new CustomController(Constants.OperatorConstants.kOperatorControllerPort, CustomControllerType.XBOX, Constants.OperatorConstants.kDeadband, 1);
 
   // * SwerveDrive
   private final SwerveChassis chassis;
@@ -85,7 +83,7 @@ public class RobotContainer {
       Constants.SwerveChassisConstants.PhysicalModel.kDriveKinematics, 
       chassis::getHeading,
       chassis::getModulePositions,
-      new Pose2d(),+
+      new Pose2d(),
       0.02,
       m_limelight3G
     );
@@ -96,7 +94,7 @@ public class RobotContainer {
 
     // Arm
     // TODO: make it so it takes the encoder position
-    this.arm = new Arm(() -> elevator.getPosition());
+    this.arm = new Arm(() -> elevator.getSetpoint());
 
     // End effector
     this.endEffector = new EndEffector();
@@ -137,6 +135,7 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
+    // ! DRIVER
     this.chassis.setDefaultCommand(new DriveSwerve(
         chassis,
         () -> -DRIVER.getLeftY(),
@@ -147,9 +146,20 @@ public class RobotContainer {
     );
     
     // ? Changed these to onTrue because it's inefficient to have the driver holding the button
-    DRIVER.topButton().onTrue(elevator.setPostitionCommand(ElevatorPosition.L1));
-    DRIVER.leftButton().onTrue(elevator.setPostitionCommand(ElevatorPosition.L2));
-    DRIVER.bottomButton().onTrue(elevator.setPostitionCommand(ElevatorPosition.L3));
+    DRIVER.povRight().onTrue(elevator.setPostitionCommand(ElevatorPosition.L3));
+    DRIVER.povLeft().onTrue(elevator.setPostitionCommand(ElevatorPosition.L2));
+    DRIVER.povDown().onTrue(elevator.setPostitionCommand(ElevatorPosition.L1));
+
+    // ! OPERATOR
+    // Algae
+    // TODO: Try without limitswitch
+    Trigger algaeMode = OPERATOR.leftTrigger();
+    OPERATOR.leftButton().and(algaeMode).onTrue(endEffector.intakeAlgaeCommand());
+    OPERATOR.topButton().and(algaeMode).onTrue(endEffector.outakeAlgaeCommand());
+
+    // Coral
+    OPERATOR.leftButton().onTrue(endEffector.intakeCoralCommand());
+    OPERATOR.topButton().onTrue(endEffector.outakeCoralCommand());
 
     // ! TODO: If the command used to set the elevator position doesn't run constantly this will override it
     // this.elevator.setDefaultCommand(elevator.setPostitionCommand(ElevatorPosition.HOME));

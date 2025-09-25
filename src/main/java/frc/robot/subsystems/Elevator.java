@@ -4,11 +4,9 @@
 
 package frc.robot.subsystems;
 
-import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
@@ -25,21 +23,19 @@ public class Elevator extends SubsystemBase {
     // TODO: Update these values
     ZERO(0.0),
     
-		L1(0.5),
+		HOME(0.2),
+    
+		L1(0.0),
 
 		L2(0.7), 
-		L2_ALGAE_HIGH(L2.getPosition()), 
-		L2_ALGAE_LOW(L2.getPosition()),
+		L2_ALGAE(L2.getPosition()),
 
 		L3(1),
-		L3_ALGAE_HIGH(L3.getPosition()),
-		L3_ALGAE_LOW(L3.getPosition()),
+		L3_ALGAE(L3.getPosition()),
 
 		L4(1.4),
 
-		SOURCE(0.5),
-
-		HOME(0.2),
+		STATION(0.5),
 
     INTAKE(0.3),
     NET(2.4);
@@ -55,22 +51,24 @@ public class Elevator extends SubsystemBase {
 		}
 	}
 
+  // Left Motor (MASTER)
   private final SparkFlex leftMotor;
-  private final SparkFlex rightMotor;
   private final SparkFlexConfig leftMotorConfig;
+
+  // Encoder from left motor
+  private final RelativeEncoder leftEncoder;
+  
+  // Right Motor (SLAVE)
+  private final SparkFlex rightMotor;
   private final SparkFlexConfig rightMotorConfig;
-
-  private final RelativeEncoder encoder;
-  private final SparkClosedLoopController pid;
-
-  private ElevatorPosition position = ElevatorPosition.ZERO; 
+  
+  // Setpoint
+  private ElevatorPosition setpoint = ElevatorPosition.ZERO; 
 
   /** Creates a new Elevator. */
   public Elevator() {
+    // * Left Motor (MASTER)
     this.leftMotor = new SparkFlex(leftMotorId, MotorType.kBrushless);
-    this.rightMotor = new SparkFlex(rightMotorId, MotorType.kBrushless);
-    
-    // ! MASTER
     this.leftMotorConfig = new SparkFlexConfig();
     this.leftMotorConfig
       .idleMode(IdleMode.kBrake)
@@ -79,86 +77,102 @@ public class Elevator extends SubsystemBase {
       .smartCurrentLimit(kMototCurrentLimit)
       .voltageCompensation(12);
     
+    // TODO: Encoder is not configured
+    // ? Leave it like this?
+    
+    // Configure motor
+    this.leftMotor.configure(leftMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
+
+    // Encoder from left motor
+    this.leftEncoder = leftMotor.getEncoder();
+    
+    // * Right Motor (SLAVE)
+    this.rightMotor = new SparkFlex(rightMotorId, MotorType.kBrushless);
     this.rightMotorConfig = new SparkFlexConfig();
     this.rightMotorConfig
-      .idleMode(IdleMode.kBrake)
-      .follow(leftMotorId, true)
-      .openLoopRampRate(kMotorRampRate)
-      .closedLoopRampRate(kMotorRampRate)
-      .smartCurrentLimit(kMototCurrentLimit)
-      .voltageCompensation(12);
+    .idleMode(IdleMode.kBrake)
+    .follow(leftMotorId, true) // Follows left motor (INVERTED)
+    .openLoopRampRate(kMotorRampRate)
+    .closedLoopRampRate(kMotorRampRate)
+    .smartCurrentLimit(kMototCurrentLimit)
+    .voltageCompensation(12);
     
-    this.leftMotorConfig.closedLoop
-      .p(kP)
-      .i(kI)
-      .d(kD);
-    
-    this.leftMotor.configure(leftMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
+    // Configure motor
     this.rightMotor.configure(rightMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
 
-    this.encoder = leftMotor.getEncoder();
-    this.pid = leftMotor.getClosedLoopController();
+    // Log position setpoints for debugging
+    for(ElevatorPosition pos : ElevatorPosition.values()) {
+      SmartDashboard.putData("Arm/Setpoint/" + pos.name(), setPostitionCommand(pos).ignoringDisable(true));
+    }
   }
 
-  public void resetEncoder() { encoder.setPosition(0); }
+  
+  public void setEncoder(double position) {
+    leftEncoder.setPosition(position);
+  }
 
-  public void setEncoder(double position) { encoder.setPosition(position); }
+  public void resetEncoder() {
+    setEncoder(0.0);
+  }
 
-  /**
-   * Gets the position of the elevator
-   * @return The position in meters
-   */
   public double getEncoderPosition() {
-    return encoder.getPosition();
+    return leftEncoder.getPosition();
   }
 
-  public ElevatorPosition getPosition() {
-    return position;
+  public ElevatorPosition getSetpoint() {
+    return setpoint;
   }
 
   /**
    * Sets the goal position for the elevator
    * @param position The setpoint position of the elevator in meters
    */
-  private void setPosition(double position) {
-    if(position > kMaxHeight || position < kMinHeight) return;
+  // private void setPosition(double position) {
+  //   if(position > kMaxHeight || position < kMinHeight) return;
+  //   pid.setReference(position, ControlType.kPosition);
+  // }
 
-    pid.setReference(position, ControlType.kPosition);
+  public void setSetpoint(ElevatorPosition position) {
+    this.setpoint = position;
   }
 
-  public void setPosition(ElevatorPosition position) {
-    double meters = position.getPosition();
-    this.position = position;
-    setPosition(meters);
-  }
-
-  /**
-   * @return True if the position is within epsilon of the setpoint
-   */
   public boolean isAtPosition() {
-    return Math.abs(position.getPosition() - getEncoderPosition()) < kPositionEpsilon;
+    return Math.abs(setpoint.getPosition() - getEncoderPosition()) < kPositionEpsilon;
   }
 
+  // TODO: Check if these RunCommands should be InstantCommands instead
   public Command setPostitionCommand(ElevatorPosition position) {
-    return new RunCommand(()->setPosition(position), this);
+    return new RunCommand(()->setSetpoint(position), this);
   }
 
   public Command setPostitionWaitCommand(ElevatorPosition position) {
-    return new RunCommand(()->setPosition(position), this).until(this::isAtPosition);
+    return new RunCommand(()->setSetpoint(position), this).until(this::isAtPosition);
   }
 
   public void stop() {
+    // TODO: Implement this properly (PID will override it)
     leftMotor.set(0);
   }
 
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("Elevator/RawPosition", encoder.getPosition());
+    double pidResult = pidController.calculate(getEncoderPosition(), setpoint.getPosition());
+    // ? setpoint should be passed instead of pid value to ff?
+    double ffResult = feedforward.calculate(pidResult);
+
+    leftMotor.setVoltage(pidResult);
+
+    // TODO: these 2 are the same
+    SmartDashboard.putNumber("Elevator/RawPosition", leftEncoder.getPosition());
     SmartDashboard.putNumber("Elevator/Postition", getEncoderPosition());
+
     SmartDashboard.putBoolean("Elevator/IsAtPosition", isAtPosition());
-    SmartDashboard.putNumber("Elevator/setpoint", position.getPosition());
+    SmartDashboard.putNumber("Elevator/setpoint", setpoint.getPosition());
 
     SmartDashboard.putNumber("Elevator/LAppliedOutput", leftMotor.getAppliedOutput());
     SmartDashboard.putNumber("Elevator/RAppliedOutput", rightMotor.getAppliedOutput());
+
+    SmartDashboard.putNumber("Elevator/PIDResult", pidResult);
+    SmartDashboard.putNumber("Elevator/FFResult", ffResult);
   }
 }
