@@ -21,12 +21,13 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants.EndEffectorConstants.AlgeaConstants;
+import frc.robot.Constants.EndEffectorConstants.CoralConstants;
 
 public class EndEffector extends SubsystemBase {
   private final SparkMax coralMotor;
   private final SparkBaseConfig coralConfig;
-  private final SparkMax algeaMotor;
-  private final SparkBaseConfig algeaConfig;
+  private final SparkMax algaeMotor;
+  private final SparkBaseConfig algaeConfig;
 
   private final DigitalInput coralSwitch;
 
@@ -35,35 +36,37 @@ public class EndEffector extends SubsystemBase {
     coralMotor = new SparkMax(kCoralMotorID, MotorType.kBrushless);
     coralConfig = new SparkMaxConfig();
     coralConfig
+      .voltageCompensation(12)
       .idleMode(IdleMode.kBrake)
       .smartCurrentLimit(CoralConstants.currentLimit);
 
-    algeaMotor = new SparkMax(kAlgeaMotorID, MotorType.kBrushless);
-    algeaConfig = new SparkMaxConfig();
-    algeaConfig
+    algaeMotor = new SparkMax(kAlgeaMotorID, MotorType.kBrushless);
+    algaeConfig = new SparkMaxConfig();
+    algaeConfig
+      .voltageCompensation(12)
       .idleMode(IdleMode.kBrake)
       .smartCurrentLimit(AlgeaConstants.currentLimit);
 
     coralSwitch = new DigitalInput(kCoralSwitchID);
 
     coralMotor.configure(coralConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
-    algeaMotor.configure(algeaConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+    algaeMotor.configure(algaeConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
   }
 
-  public void intakeAlgea() {
-    algeaMotor.set(AlgeaConstants.intakeSpeed);
+  public void intakeAlgae() {
+    algaeMotor.set(AlgeaConstants.intakeSpeed);
   }
 
-  public void holdAlgea() {
-    algeaMotor.set(AlgeaConstants.holdSpeed);
+  public void holdAlgae() {
+    algaeMotor.set(AlgeaConstants.holdSpeed);
   }
 
-  public void outakeAlgea() {
-    algeaMotor.set(AlgeaConstants.outakeSpeed);
+  public void outakeAlgae() {
+    algaeMotor.set(AlgeaConstants.outakeSpeed);
   }
 
-  public void stopAlgea() {
-    algeaMotor.set(0);
+  public void stopAlgae() {
+    algaeMotor.set(0);
   }
 
   public void intakeCoral() {
@@ -82,29 +85,39 @@ public class EndEffector extends SubsystemBase {
     return coralSwitch.get();
   }
 
-  public boolean getAlgea() {
-    return algeaMotor.getOutputCurrent() > AlgeaConstants.checkCurrent;
+  public boolean getAlgae() {
+    return algaeMotor.getOutputCurrent() > AlgeaConstants.checkCurrent;
   }
 
   public Command intakeCoralCommand() {
-    return new InstantCommand(this::intakeCoral).until(this::getCoral).andThen(this::stopCoral);
+    return new InstantCommand(this::intakeCoral)
+      .until(this::getCoral)
+      .andThen(this::stopCoral);
   }
 
   public Command outakeCoralCommand() {
-    return new InstantCommand(this::outakeCoral).until(()->!getCoral()).andThen(new WaitCommand(0.2)).andThen(this::stopCoral);
+    return new InstantCommand(this::outakeCoral)
+      .until(()->!getCoral())
+      .andThen(new WaitCommand(0.2))
+      .andThen(this::stopCoral);
   }
 
-  public Command intakeAlgeaCommand() {
-    return new InstantCommand(this::intakeAlgea).until(this::getAlgea).andThen(this::holdAlgea);
+  public Command intakeAlgaeCommand() {
+    return new InstantCommand(this::intakeAlgae)
+      .until(this::getAlgae)
+      .andThen(this::holdAlgae);
   }
 
-  public Command outakeAlgeaCommand() {
-    return new InstantCommand(this::outakeAlgea).until(()->!getAlgea()).andThen(new WaitCommand(0.2)).andThen(this::stopAlgea);
+  public Command outakeAlgaeCommand() {
+    return new InstantCommand(this::outakeAlgae)
+      .until(()->!getAlgae())
+      .andThen(new WaitCommand(0.2))
+      .andThen(this::stopAlgae);
   }
 
   @Override
   public void periodic() {
     SmartDashboard.putBoolean("EndEffector/hasCoral", getCoral());
-    SmartDashboard.putBoolean("EndEffector/hasAlgea", getAlgea());
+    SmartDashboard.putBoolean("EndEffector/hasAlgae", getAlgae());
   }
 }
