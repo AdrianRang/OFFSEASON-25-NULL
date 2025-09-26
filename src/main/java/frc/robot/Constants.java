@@ -189,10 +189,10 @@ public final class Constants {
 
     // PID controller
     public static final ProfiledPIDController pidController = new ProfiledPIDController(
-      0.2,
+      3.0,
       0.0,
       0.0,
-      new TrapezoidProfile.Constraints(5, 10)
+      new TrapezoidProfile.Constraints(130, 50)
     );
 
     // Feedforward
@@ -218,24 +218,23 @@ public final class Constants {
 
     // PID controller
     public static final ProfiledPIDController pidController = new ProfiledPIDController(
-      0.1,
+      25.0,
       0.0,
       0.0,
-      new TrapezoidProfile.Constraints(5, 2)
+      new TrapezoidProfile.Constraints(3.0, 2.0)
     );
 
     // Feedforward
     // Calculated with: https://www.reca.lc/arm?armMass=%7B%22s%22%3A15%2C%22u%22%3A%22lbs%22%7D&comLength=%7B%22s%22%3A17%2C%22u%22%3A%22in%22%7D&currentLimit=%7B%22s%22%3A40%2C%22u%22%3A%22A%22%7D&efficiency=90&endAngle=%7B%22s%22%3A180%2C%22u%22%3A%22deg%22%7D&iterationLimit=10000&motor=%7B%22quantity%22%3A1%2C%22name%22%3A%22NEO%20Vortex%2A%22%7D&ratio=%7B%22magnitude%22%3A80%2C%22ratioType%22%3A%22Reduction%22%7D&startAngle=%7B%22s%22%3A0%2C%22u%22%3A%22deg%22%7D
     // TODO: CAREFULY CHECK THE BEHAVIOR OF THE ARM WITH FF
     // ! KV seems high, check it
-    public static final ArmFeedforward feedforward = new ArmFeedforward(0.0, 1.08, 8.49 / (2 * Math.PI));
-
-  
+    // ? No kS gain?
+    public static final ArmFeedforward feedforward = new ArmFeedforward(0.0, 0.04, 0.075);
   }
 
   public static final class EndEffectorConstants {
     public static final int kCoralMotorID = 50;
-    public static final int kAlgeaMotorID = 51;
+    public static final int kAlgaeMotorID = 51;
     public static final int kCoralSwitchID = 0;
 
     public static final class CoralConstants {
@@ -246,7 +245,7 @@ public final class Constants {
     }
 
     public static final class AlgeaConstants {
-      public static final double intakeSpeed = -0.8;
+      public static final double intakeSpeed = -0.1;
       public static final double holdSpeed = -0.1;
       public static final double outakeSpeed = 0.5;
 
@@ -258,9 +257,9 @@ public final class Constants {
 
   public static enum RobotState {
     HOME(ArmPosition.IDLE, ElevatorPosition.HOME),
-    L1(ArmPosition.PLACE, Elevator.ElevatorPosition.L1),
-    L2(ArmPosition.PLACE, Elevator.ElevatorPosition.L2),
-    L3(ArmPosition.PLACE, Elevator.ElevatorPosition.L3);
+    L1(ArmPosition.PLACE_L1, Elevator.ElevatorPosition.L1),
+    L2(ArmPosition.PLACE_L234, Elevator.ElevatorPosition.L2),
+    L3(ArmPosition.PLACE_L234, Elevator.ElevatorPosition.L3);
     
     private ArmPosition armPosition;
     private ElevatorPosition elevatorPosition;

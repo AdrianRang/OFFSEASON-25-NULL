@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.ElevatorConstants;
 
 import static frc.robot.Constants.ElevatorConstants.*;
 
@@ -23,22 +24,22 @@ public class Elevator extends SubsystemBase {
     // TODO: Update these values
     ZERO(0.0),
     
-		HOME(0.2),
+		HOME(5.0),
     
-		L1(0.0),
+		L1(HOME.getPosition()),
 
-		L2(0.7), 
+		L2(HOME.getPosition()), 
 		L2_ALGAE(L2.getPosition()),
 
-		L3(1),
+		L3(30.0),
 		L3_ALGAE(L3.getPosition()),
 
-		L4(1.4),
+		L4(66.0),
 
-		STATION(0.5),
+		STATION(5.0),
 
-    INTAKE(0.3),
-    NET(2.4);
+    INTAKE(2.5),
+    NET(35);
 
 		private double position;
 
@@ -71,6 +72,7 @@ public class Elevator extends SubsystemBase {
     this.leftMotor = new SparkFlex(leftMotorId, MotorType.kBrushless);
     this.leftMotorConfig = new SparkFlexConfig();
     this.leftMotorConfig
+      .inverted(true)
       .idleMode(IdleMode.kBrake)
       .openLoopRampRate(kMotorRampRate)
       .closedLoopRampRate(kMotorRampRate)
@@ -102,8 +104,11 @@ public class Elevator extends SubsystemBase {
 
     // Log position setpoints for debugging
     for(ElevatorPosition pos : ElevatorPosition.values()) {
-      SmartDashboard.putData("Arm/Setpoint/" + pos.name(), setPostitionCommand(pos).ignoringDisable(true));
+      SmartDashboard.putData("Elevator/Setpoint/" + pos.name(), setPostitionCommand(pos).ignoringDisable(true));
     }
+
+    // Log PID for debugging
+    SmartDashboard.putData("Elevator/PID", pidController);
   }
 
   
@@ -154,6 +159,10 @@ public class Elevator extends SubsystemBase {
     leftMotor.set(0);
   }
 
+  public void resetPID() {
+    pidController.reset(getEncoderPosition());
+  }
+ 
   @Override
   public void periodic() {
     double pidResult = pidController.calculate(getEncoderPosition(), setpoint.getPosition());

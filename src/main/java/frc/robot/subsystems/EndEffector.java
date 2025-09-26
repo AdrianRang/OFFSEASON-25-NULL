@@ -17,7 +17,7 @@ import static frc.robot.Constants.EndEffectorConstants.*;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants.EndEffectorConstants.AlgeaConstants;
@@ -40,7 +40,7 @@ public class EndEffector extends SubsystemBase {
       .idleMode(IdleMode.kBrake)
       .smartCurrentLimit(CoralConstants.currentLimit);
 
-    algaeMotor = new SparkMax(kAlgeaMotorID, MotorType.kBrushless);
+    algaeMotor = new SparkMax(kAlgaeMotorID, MotorType.kBrushless);
     algaeConfig = new SparkMaxConfig();
     algaeConfig
       .voltageCompensation(12)
@@ -81,43 +81,45 @@ public class EndEffector extends SubsystemBase {
     coralMotor.set(0);
   }
 
-  public boolean getCoral() {
-    return coralSwitch.get();
+  public boolean hasCoral() {
+    // return coralSwitch.get();
+    return false;
   }
 
-  public boolean getAlgae() {
-    return algaeMotor.getOutputCurrent() > AlgeaConstants.checkCurrent;
+  public boolean hasAlgae() {
+    // return algaeMotor.getOutputCurrent() > AlgeaConstants.checkCurrent;
+    return false;
   }
 
   public Command intakeCoralCommand() {
-    return new InstantCommand(this::intakeCoral)
-      .until(this::getCoral)
+    return new RunCommand(this::intakeCoral)
+      .until(this::hasCoral)
       .andThen(this::stopCoral);
   }
 
   public Command outakeCoralCommand() {
-    return new InstantCommand(this::outakeCoral)
-      .until(()->!getCoral())
+    return new RunCommand(this::outakeCoral)
+      .until(()->!hasCoral())
       .andThen(new WaitCommand(0.2))
       .andThen(this::stopCoral);
   }
 
   public Command intakeAlgaeCommand() {
-    return new InstantCommand(this::intakeAlgae)
-      .until(this::getAlgae)
+    return new RunCommand(this::intakeAlgae)
+      .until(this::hasAlgae)
       .andThen(this::holdAlgae);
   }
 
   public Command outakeAlgaeCommand() {
-    return new InstantCommand(this::outakeAlgae)
-      .until(()->!getAlgae())
+    return new RunCommand(this::outakeAlgae)
+      .until(()->!hasAlgae())
       .andThen(new WaitCommand(0.2))
       .andThen(this::stopAlgae);
   }
 
   @Override
   public void periodic() {
-    SmartDashboard.putBoolean("EndEffector/hasCoral", getCoral());
-    SmartDashboard.putBoolean("EndEffector/hasAlgae", getAlgae());
+    SmartDashboard.putBoolean("EndEffector/hasCoral", hasCoral());
+    SmartDashboard.putBoolean("EndEffector/hasAlgae", hasAlgae());
   }
 }
