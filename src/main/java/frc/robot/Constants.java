@@ -16,7 +16,6 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
-import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Elevator.ElevatorPosition;
 import frc.robot.subsystems.Arm.ArmPosition;
@@ -245,13 +244,17 @@ public final class Constants {
     }
 
     public static final class AlgeaConstants {
-      public static final double intakeSpeed = -0.1;
-      public static final double holdSpeed = -0.1;
-      public static final double outakeSpeed = 0.5;
+      public static final double intakeCurrent = -3;
+      public static final double outakeCurrent = 10;
 
       public static final double checkCurrent = 30;
 
       public static final int currentLimit = 40;
+
+      // TODO
+      public static final int kP = 0;
+      public static final int kI = 0;
+      public static final int kD = 0;
     }
   }
 

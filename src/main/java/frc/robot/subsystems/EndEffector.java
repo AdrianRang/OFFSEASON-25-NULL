@@ -5,8 +5,10 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
@@ -28,6 +30,7 @@ public class EndEffector extends SubsystemBase {
   private final SparkBaseConfig coralConfig;
   private final SparkMax algaeMotor;
   private final SparkBaseConfig algaeConfig;
+  private final SparkClosedLoopController algaePid;
 
   private final DigitalInput coralSwitch;
 
@@ -45,28 +48,34 @@ public class EndEffector extends SubsystemBase {
     algaeConfig
       .voltageCompensation(12)
       .idleMode(IdleMode.kBrake)
-      .smartCurrentLimit(AlgeaConstants.currentLimit);
+      .smartCurrentLimit(AlgeaConstants.currentLimit)
+      .closedLoop.pid(AlgeaConstants.kP, AlgeaConstants.kI, AlgeaConstants.kD);
 
     coralSwitch = new DigitalInput(kCoralSwitchID);
 
     coralMotor.configure(coralConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
     algaeMotor.configure(algaeConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+    algaePid = algaeMotor.getClosedLoopController();
   }
 
+  // TODO: Test Algea by current
   public void intakeAlgae() {
-    algaeMotor.set(AlgeaConstants.intakeSpeed);
+    // algaeMotor.set(AlgeaConstants.intakeSpeed);
+    algaePid.setReference(AlgeaConstants.intakeCurrent, ControlType.kCurrent);
   }
 
-  public void holdAlgae() {
-    algaeMotor.set(AlgeaConstants.holdSpeed);
-  }
+  // public void holdAlgae() {
+  //   algaeMotor.set(AlgeaConstants.holdSpeed);
+  // }
 
   public void outakeAlgae() {
-    algaeMotor.set(AlgeaConstants.outakeSpeed);
+    // algaeMotor.set(AlgeaConstants.outakeSpeed);
+    algaePid.setReference(AlgeaConstants.outakeCurrent, ControlType.kCurrent);
   }
 
   public void stopAlgae() {
-    algaeMotor.set(0);
+    // algaeMotor.set(0);
+    algaePid.setReference(0, ControlType.kCurrent);
   }
 
   public void intakeCoral() {
@@ -106,8 +115,8 @@ public class EndEffector extends SubsystemBase {
 
   public Command intakeAlgaeCommand() {
     return new RunCommand(this::intakeAlgae)
-      .until(this::hasAlgae)
-      .andThen(this::holdAlgae);
+      .until(this::hasAlgae);
+      // .andThen(this::holdAlgae);
   }
 
   public Command outakeAlgaeCommand() {
