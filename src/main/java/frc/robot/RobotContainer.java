@@ -1,5 +1,6 @@
 package frc.robot;
 
+import frc.robot.Constants.ElevatorConstants;
 import frc.robot.Constants.SwerveChassisConstants;
 import frc.robot.commands.DriveSwerve;
 import frc.robot.subsystems.Arm;
@@ -18,6 +19,9 @@ import lib.BlueShift.control.CustomController.CustomControllerType;
 import lib.BlueShift.odometry.swerve.BlueShiftOdometry;
 import lib.BlueShift.odometry.vision.camera.LimelightOdometryCamera;
 import lib.BlueShift.odometry.vision.camera.VisionOdometryFilters;
+
+import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
@@ -30,6 +34,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 /**
@@ -62,6 +67,9 @@ public class RobotContainer {
 
   // * Autonomous
   private final SendableChooser<Command> m_autonomousChooser;
+
+  // * Enable Trigger
+  Trigger enableTrigger = new Trigger(DriverStation::isEnabled);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -130,6 +138,12 @@ public class RobotContainer {
     SmartDashboard.putData("Chassis/ResetTurningEncoders", new InstantCommand(chassis::resetTurningEncoders).ignoringDisable(true));
     SmartDashboard.putData("Elevator/ResetEncoder", new InstantCommand(elevator::resetEncoder).ignoringDisable(true));
 
+
+    // Reset PIDs on enable
+    enableTrigger.onTrue(new InstantCommand(() -> {
+      elevator.resetPID();
+    }));
+
     // Configure the trigger bindings
     configureBindings();
   }
@@ -154,12 +168,16 @@ public class RobotContainer {
     // Algae
     // TODO: Try without limitswitch
     Trigger algaeMode = OPERATOR.leftTrigger();
-    OPERATOR.leftButton().and(algaeMode).onTrue(endEffector.intakeAlgaeCommand());
-    OPERATOR.topButton().and(algaeMode).onTrue(endEffector.outakeAlgaeCommand());
+    OPERATOR.leftButton().and(algaeMode).onTrue(new RunCommand(endEffector::intakeAlgae, endEffector));
+    OPERATOR.leftButton().and(algaeMode).onFalse(new RunCommand(endEffector::stopAlgae, endEffector));
+    OPERATOR.topButton().and(algaeMode).onTrue(new RunCommand(endEffector::outakeAlgae, endEffector));
+    OPERATOR.topButton().and(algaeMode).onFalse(new RunCommand(endEffector::stopAlgae, endEffector));
 
     // Coral
-    OPERATOR.leftButton().onTrue(endEffector.intakeCoralCommand());
-    OPERATOR.topButton().onTrue(endEffector.outakeCoralCommand());
+    OPERATOR.leftButton().and(algaeMode.negate()).onTrue(new RunCommand(endEffector::intakeCoral, endEffector));
+    OPERATOR.leftButton().and(algaeMode.negate()).onFalse(new RunCommand(endEffector::stopCoral, endEffector));
+    OPERATOR.topButton().and(algaeMode.negate()).onTrue(new RunCommand(endEffector::outakeCoral, endEffector));
+    OPERATOR.topButton().and(algaeMode.negate()).onFalse(new RunCommand(endEffector::stopCoral, endEffector));
 
     // ! TODO: If the command used to set the elevator position doesn't run constantly this will override it
     // this.elevator.setDefaultCommand(elevator.setPostitionCommand(ElevatorPosition.HOME));
