@@ -1,6 +1,5 @@
 package frc.robot;
 
-import frc.robot.Constants.ElevatorConstants;
 import frc.robot.Constants.SwerveChassisConstants;
 import frc.robot.commands.DriveSwerve;
 import frc.robot.subsystems.Arm;
@@ -19,8 +18,6 @@ import lib.BlueShift.control.CustomController.CustomControllerType;
 import lib.BlueShift.odometry.swerve.BlueShiftOdometry;
 import lib.BlueShift.odometry.vision.camera.LimelightOdometryCamera;
 import lib.BlueShift.odometry.vision.camera.VisionOdometryFilters;
-
-import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.RobotConfig;
@@ -48,32 +45,25 @@ public class RobotContainer {
   private final CustomController DRIVER = new CustomController(Constants.OperatorConstants.kDriverControllerPort, CustomControllerType.XBOX, Constants.OperatorConstants.kDeadband, 1);
   private final CustomController OPERATOR = new CustomController(Constants.OperatorConstants.kOperatorControllerPort, CustomControllerType.XBOX, Constants.OperatorConstants.kDeadband, 1);
 
-  // * SwerveDrive
   private final SwerveChassis chassis;
 
-  // * Odometry
   private final BlueShiftOdometry m_odometry;
   private final LimelightOdometryCamera m_limelight3G;
 
   // * Subsystems
-  // Elevator
   private final Elevator elevator;
   
-  // Arm
   private final Arm arm;
 
-  // End effector
   private final EndEffector endEffector;
 
   // * Autonomous
   private final SendableChooser<Command> m_autonomousChooser;
 
-  // * Enable Trigger
   Trigger enableTrigger = new Trigger(DriverStation::isEnabled);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    // * SwerveDrive
     this.chassis = new SwerveChassis(
       new SwerveModule(Constants.SwerveModuleConstants.kFrontLeftOptions),
       new SwerveModule(Constants.SwerveModuleConstants.kFrontRightOptions),
@@ -97,14 +87,11 @@ public class RobotContainer {
     );
     
     // * Subsystems
-    // Elevator
     this.elevator = new Elevator();
 
-    // Arm
     // TODO: make it so it takes the encoder position
     this.arm = new Arm(() -> elevator.getSetpoint());
 
-    // End effector
     this.endEffector = new EndEffector();
 
     // * Autonomous
@@ -130,7 +117,6 @@ public class RobotContainer {
       chassis
     );
 
-    // Auto chooser
     this.m_autonomousChooser = AutoBuilder.buildAutoChooser();
     SmartDashboard.putData("AutoChooser", m_autonomousChooser);
 
@@ -144,7 +130,6 @@ public class RobotContainer {
       elevator.resetPID();
     }));
 
-    // Configure the trigger bindings
     configureBindings();
   }
 
@@ -159,7 +144,6 @@ public class RobotContainer {
       )
     );
     
-    // ? Changed these to onTrue because it's inefficient to have the driver holding the button
     DRIVER.povRight().onTrue(elevator.setPostitionCommand(ElevatorPosition.L3));
     DRIVER.povLeft().onTrue(elevator.setPostitionCommand(ElevatorPosition.L2));
     DRIVER.povDown().onTrue(elevator.setPostitionCommand(ElevatorPosition.L1));

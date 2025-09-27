@@ -176,10 +176,9 @@ public final class Constants {
     public static final double kMotorRampRate = 0.0;
     public static final int kMototCurrentLimit = 40;
 
-    //TODO: Update values
+    // TODO: Update values
     public static final double kMaxHeight = 2.5; // Meters
     public static final double kMinHeight = 0; // Meters
-    //! Encoders cannot have negative conversion factors, the motor has to be inverted so the value is inverted
     public static final double kRotationToHeightRatio = kMaxHeight / 35.0; // Rotations to meters
     public static final double kPositionEpsilon = 0.2;
 
@@ -251,7 +250,7 @@ public final class Constants {
 
       public static final int currentLimit = 40;
 
-      // TODO
+      // TODO: Tune Algea motor PID (current)
       public static final int kP = 0;
       public static final int kI = 0;
       public static final int kD = 0;
@@ -261,8 +260,9 @@ public final class Constants {
   public static enum RobotState {
     HOME(ArmPosition.IDLE, ElevatorPosition.HOME),
     L1(ArmPosition.PLACE_L1, Elevator.ElevatorPosition.L1),
-    L2(ArmPosition.PLACE_L234, Elevator.ElevatorPosition.L2),
-    L3(ArmPosition.PLACE_L234, Elevator.ElevatorPosition.L3);
+    L2(ArmPosition.PLACE_L23, Elevator.ElevatorPosition.L2),
+    L3(ArmPosition.PLACE_L23, Elevator.ElevatorPosition.L3),
+    L4(ArmPosition.PLACE_L4, Elevator.ElevatorPosition.L4);
     
     private ArmPosition armPosition;
     private ElevatorPosition elevatorPosition;
