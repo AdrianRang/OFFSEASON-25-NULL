@@ -90,7 +90,7 @@ public class Arm extends SubsystemBase {
     // Mechanism visualization
     mech = new Mechanism2d(1, 1, new Color8Bit(255, 255, 255));
     armMech = mech.getRoot("Arm", 0, 1);
-    armLigament = new MechanismLigament2d("ArmLigament", 1, 90)`      ;
+    armLigament = new MechanismLigament2d("ArmLigament", 1, 90);
     armMech.append(armLigament);
 
     // Log position setpoints for debugging
