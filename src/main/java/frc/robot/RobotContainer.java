@@ -1,8 +1,10 @@
 package frc.robot;
 
 import frc.robot.Constants.ElevatorConstants;
+import frc.robot.Constants.RobotState;
 import frc.robot.Constants.SwerveChassisConstants;
 import frc.robot.commands.DriveSwerve;
+import frc.robot.commands.ScoringCommands;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.EndEffector;
@@ -138,6 +140,10 @@ public class RobotContainer {
     SmartDashboard.putData("Chassis/ResetTurningEncoders", new InstantCommand(chassis::resetTurningEncoders).ignoringDisable(true));
     SmartDashboard.putData("Elevator/ResetEncoder", new InstantCommand(elevator::resetEncoder).ignoringDisable(true));
 
+    // RobotState debug commands
+    for (RobotState state : RobotState.values()) {
+      SmartDashboard.putData("ScoringCommands/" + state.name(), ScoringCommands.setRobotState(state, arm, elevator));
+    }
 
     // Reset PIDs on enable
     enableTrigger.onTrue(new InstantCommand(() -> {
@@ -152,17 +158,23 @@ public class RobotContainer {
     // ! DRIVER
     this.chassis.setDefaultCommand(new DriveSwerve(
         chassis,
+        () -> DRIVER.getLeftX(),
         () -> -DRIVER.getLeftY(),
-        () -> -DRIVER.getLeftX(),
         () -> DRIVER.getLeftTrigger() - DRIVER.getRightTrigger(),
         () -> !DRIVER.bottomButton().getAsBoolean()
       )
     );
+    this.DRIVER.rightButton().onTrue(new InstantCommand(chassis::zeroHeading));
     
     // ? Changed these to onTrue because it's inefficient to have the driver holding the button
     DRIVER.povRight().onTrue(elevator.setPostitionCommand(ElevatorPosition.L3));
     DRIVER.povLeft().onTrue(elevator.setPostitionCommand(ElevatorPosition.L2));
     DRIVER.povDown().onTrue(elevator.setPostitionCommand(ElevatorPosition.L1));
+
+    DRIVER.leftBumper().onTrue(elevator.setVoltageCommand(-4));
+    DRIVER.leftBumper().onFalse(elevator.setVoltageCommand(0));
+    DRIVER.rightBumper().onTrue(elevator.setVoltageCommand(4));
+    DRIVER.rightBumper().onFalse(elevator.setVoltageCommand(0));
 
     // ! OPERATOR
     // Algae

@@ -16,7 +16,6 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotations;
 import static frc.robot.Constants.ArmConstants.*;
-import static frc.robot.Constants.ElevatorConstants.kPositionEpsilon;
 import java.util.function.Supplier;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Angle;
@@ -31,7 +30,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Arm extends SubsystemBase {
   public static enum ArmPosition {
-    INTAKE(Degrees.of(250)),
+    INTAKE(Degrees.of(220)),
     IDLE(Degrees.of(140)),
     PLACE_L234(Degrees.of(37)),
     PLACE_L1(Degrees.of(62)),
@@ -89,8 +88,8 @@ public class Arm extends SubsystemBase {
     
     // Mechanism visualization
     mech = new Mechanism2d(1, 1, new Color8Bit(255, 255, 255));
-    armMech = mech.getRoot("Arm", 0, 1);
-    armLigament = new MechanismLigament2d("ArmLigament", 1, 90)`      ;
+    armMech = mech.getRoot("Arm", 0.5, 0.5);
+    armLigament = new MechanismLigament2d("ArmLigament", 0.5, 90);
     armMech.append(armLigament);
 
     // Log position setpoints for debugging
@@ -119,7 +118,7 @@ public class Arm extends SubsystemBase {
 
 
   public boolean atPosition() {
-    return Math.abs(encoder.getPosition() - setpoint.getPosition().in(Rotations)) < kPositionEpsilon;
+    return Math.abs(encoder.getPosition() - setpoint.getPosition().in(Rotations)) < kRotationEpsilon.in(Rotations);
   }
 
   public Command setPostionCommand(ArmPosition position) {
@@ -143,7 +142,7 @@ public class Arm extends SubsystemBase {
     // motor.setVoltage(0);
 
     // Update mechanism2d
-    armLigament.setAngle(Rotation2d.fromRotations(encoder.getPosition()));
+    armLigament.setAngle(Rotations.of(encoder.getPosition()).plus(Degrees.of(90)).in(Degrees));
     SmartDashboard.putData("Arm/Mechanism", mech);
 
     // Update telemetry

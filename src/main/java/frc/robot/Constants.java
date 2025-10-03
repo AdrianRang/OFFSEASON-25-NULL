@@ -51,12 +51,23 @@ public final class Constants {
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
     public static final int kOperatorControllerPort = 1;
-    public static final double kDeadband = 0.05;
+    public static final double kDeadband = 0.09;
   }
 
   public static class SwerveChassisConstants {
     public static final CTRECANDevice kGyroDevice = new CTRECANDevice(34, "*");
 
+    public static final class PoseControllers {
+      public static final ProfiledPIDController rotationPID = new ProfiledPIDController(4, 0, 0, new TrapezoidProfile.Constraints(100, 80));
+      public static final ProfiledPIDController translationXPID = new ProfiledPIDController(0.25, 0, 0, new TrapezoidProfile.Constraints(2.0, 0.25));
+      public static final ProfiledPIDController translationYPID = new ProfiledPIDController(0.25, 0, 0, new TrapezoidProfile.Constraints(2.0, 0.25));
+
+      public static final Distance kOffsetBoxHeight = Meters.of(0.25);
+      public static final Distance kOffsetBoxWidth = Meters.of(0.25);
+
+      public static final double epsilon = 0.05;
+      public static final double rotEpsilon = 1.;
+    }
     public static final class PhysicalModel {
       // * MAX DISPLACEMENT SPEED (and acceleration)
       public static final LinearVelocity kMaxSpeed = MetersPerSecond.of(4.0);
@@ -182,17 +193,17 @@ public final class Constants {
     public static final double kMinHeight = 0; // Meters
     //! Encoders cannot have negative conversion factors, the motor has to be inverted so the value is inverted
     public static final double kRotationToHeightRatio = kMaxHeight / 35.0; // Rotations to meters
-    public static final double kPositionEpsilon = 0.2;
+    public static final double kPositionEpsilon = 1.0;
 
 
     public static final double kBumpZone = 0.2;
 
     // PID controller
     public static final ProfiledPIDController pidController = new ProfiledPIDController(
-      3.0,
+      2.0,
       0.0,
       0.0,
-      new TrapezoidProfile.Constraints(130, 50)
+      new TrapezoidProfile.Constraints(250, 150)
     );
 
     // Feedforward
@@ -215,6 +226,7 @@ public final class Constants {
     // Angle limits
     public static final Angle kMin = Degrees.of(15);
     public static final Angle kMax = Degrees.of(250);
+    public static final Angle kRotationEpsilon = Degrees.of(15);
 
     // PID controller
     public static final ProfiledPIDController pidController = new ProfiledPIDController(
@@ -257,9 +269,11 @@ public final class Constants {
 
   public static enum RobotState {
     HOME(ArmPosition.IDLE, ElevatorPosition.HOME),
+    INTAKE(ArmPosition.INTAKE, Elevator.ElevatorPosition.HOME),
     L1(ArmPosition.PLACE_L1, Elevator.ElevatorPosition.L1),
     L2(ArmPosition.PLACE_L234, Elevator.ElevatorPosition.L2),
-    L3(ArmPosition.PLACE_L234, Elevator.ElevatorPosition.L3);
+    L3(ArmPosition.PLACE_L234, Elevator.ElevatorPosition.L3),
+    L4(ArmPosition.PLACE_L234, Elevator.ElevatorPosition.L4);
     
     private ArmPosition armPosition;
     private ElevatorPosition elevatorPosition;

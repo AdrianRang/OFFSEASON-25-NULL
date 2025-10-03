@@ -10,11 +10,18 @@ public class ScoringCommands {
     private static RobotState currentState = RobotState.HOME;
     private static RobotState previousState = RobotState.HOME;
 
-    static Command setRobotState(RobotState state, Arm arm, Elevator elevator) {
-        return new SequentialCommandGroup(
-            arm.setPostionWaitCommand(state.getArmPosition()),
-            elevator.setPostitionWaitCommand(state.getElevatorPosition())
-        );
+    public static Command setRobotState(RobotState next, Arm arm, Elevator elevator) {
+        if (next == RobotState.INTAKE) {
+            return new SequentialCommandGroup(
+                elevator.setPostitionWaitCommand(next.getElevatorPosition()),
+                arm.setPostionWaitCommand(next.getArmPosition())
+            );
+        } else {
+            return new SequentialCommandGroup(
+                arm.setPostionWaitCommand(next.getArmPosition()),
+                elevator.setPostitionWaitCommand(next.getElevatorPosition())
+            );
+        }
     }
 
     static RobotState getCurrentState() {
