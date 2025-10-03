@@ -16,9 +16,12 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import static frc.robot.Constants.EndEffectorConstants.*;
 
+import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -30,9 +33,14 @@ public class EndEffector extends SubsystemBase {
   private final SparkBaseConfig coralConfig;
   private final SparkMax algaeMotor;
   private final SparkBaseConfig algaeConfig;
-  private final SparkClosedLoopController algaePid;
+  // private final SparkClosedLoopController algaePid;
 
   private final DigitalInput coralSwitch;
+
+  private final Debouncer coralDebouncer = new Debouncer(0, DebounceType.kBoth);
+  private final Debouncer algaeDebouncer = new Debouncer(0.1, DebounceType.kBoth);
+
+  private boolean algae;
 
   /** Creates a new EndEffector. */
   public EndEffector() {
@@ -48,20 +56,20 @@ public class EndEffector extends SubsystemBase {
     algaeConfig
       .voltageCompensation(12)
       .idleMode(IdleMode.kBrake)
-      .smartCurrentLimit(AlgeaConstants.currentLimit)
-      .closedLoop.pid(AlgeaConstants.kP, AlgeaConstants.kI, AlgeaConstants.kD);
+      .smartCurrentLimit(AlgeaConstants.currentLimit);
+      // .closedLoop.pid(AlgeaConstants.kP, AlgeaConstants.kI, AlgeaConstants.kD);
 
     coralSwitch = new DigitalInput(kCoralSwitchID);
 
     coralMotor.configure(coralConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
     algaeMotor.configure(algaeConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
-    algaePid = algaeMotor.getClosedLoopController();
+    // algaePid = algaeMotor.getClosedLoopController();
   }
 
   // TODO: Test Algea by current
   public void intakeAlgae() {
-    // algaeMotor.set(AlgeaConstants.intakeSpeed);
-    algaePid.setReference(AlgeaConstants.intakeCurrent, ControlType.kCurrent);
+    algaeMotor.set(AlgeaConstants.intakeSpeed);
+    // algaePid.setReference(AlgeaConstants.intakeCurrent, ControlType.kCurrent);
   }
 
   // public void holdAlgae() {
@@ -69,13 +77,14 @@ public class EndEffector extends SubsystemBase {
   // }
 
   public void outakeAlgae() {
-    // algaeMotor.set(AlgeaConstants.outakeSpeed);
-    algaePid.setReference(AlgeaConstants.outakeCurrent, ControlType.kCurrent);
+    algae = false;
+    algaeMotor.set(AlgeaConstants.outakeSpeed);
+    // algaePid.setReference(AlgeaConstants.outakeCurrent, ControlType.kCurrent);
   }
 
   public void stopAlgae() {
-    // algaeMotor.set(0);
-    algaePid.setReference(0, ControlType.kCurrent);
+    algaeMotor.set(0);
+    // algaePid.setReference(0, ControlType.kCurrent);
   }
 
   public void intakeCoral() {
@@ -91,44 +100,67 @@ public class EndEffector extends SubsystemBase {
   }
 
   public boolean hasCoral() {
-    // return coralSwitch.get();
-    return false;
+    return coralDebouncer.calculate(coralSwitch.get());
+    // return false;
+    // return coralDebouncer.calculate(coralMotor.getOutputCurrent() < CoralConstants.checkCurrent);
   }
 
   public boolean hasAlgae() {
     // return algaeMotor.getOutputCurrent() > AlgeaConstants.checkCurrent;
-    return false;
+    // return false;
+    return algae;
   }
 
+  //? InstantCommand as the motor is set to a constant value no need to continuously run intakeCoral.
   public Command intakeCoralCommand() {
     return new RunCommand(this::intakeCoral)
-      .until(this::hasCoral)
+      // .until(this::hasCoral)
+      .andThen(new WaitCommand(2))
       .andThen(this::stopCoral);
   }
 
   public Command outakeCoralCommand() {
-    return new RunCommand(this::outakeCoral)
+    return new InstantCommand(this::outakeCoral)
       .until(()->!hasCoral())
       .andThen(new WaitCommand(0.2))
       .andThen(this::stopCoral);
   }
 
   public Command intakeAlgaeCommand() {
-    return new RunCommand(this::intakeAlgae)
+    return new InstantCommand(this::intakeAlgae)
       .until(this::hasAlgae);
       // .andThen(this::holdAlgae);
   }
 
-  public Command outakeAlgaeCommand() {
-    return new RunCommand(this::outakeAlgae)
+  public Command outakeAlgaeAutoCommand() {
+    return new InstantCommand(this::outakeAlgae)
       .until(()->!hasAlgae())
       .andThen(new WaitCommand(0.2))
       .andThen(this::stopAlgae);
   }
 
+  public Command outakeAlgaeCommand() {
+    return new InstantCommand(this::outakeAlgae);
+  }
+
+  public Command stopCommand() {
+    return new InstantCommand(()->{stopAlgae(); stopCoral();}, this);
+  }
+
   @Override
   public void periodic() {
+    if (algaeDebouncer.calculate(algaeMotor.getOutputCurrent() > AlgeaConstants.checkCurrent)) {
+      algae = true;
+    }
+
+    if (hasAlgae()) {
+      algaeMotor.set(AlgeaConstants.holdSpeed);
+    }
+
     SmartDashboard.putBoolean("EndEffector/hasCoral", hasCoral());
     SmartDashboard.putBoolean("EndEffector/hasAlgae", hasAlgae());
+
+    SmartDashboard.putNumber("EndEffector/CoralCurrent", coralMotor.getOutputCurrent());
+    SmartDashboard.putNumber("EndEffector/AlgeaCurrent", algaeMotor.getOutputCurrent());
   }
 }

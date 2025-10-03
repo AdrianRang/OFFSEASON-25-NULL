@@ -16,8 +16,6 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotations;
 import static frc.robot.Constants.ArmConstants.*;
-import static frc.robot.Constants.ElevatorConstants.kPositionEpsilon;
-import java.util.function.Supplier;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
@@ -26,15 +24,15 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.SubsystemBase; 
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Arm extends SubsystemBase {
   public static enum ArmPosition {
-    INTAKE(Degrees.of(250)),
+    INTAKE(Degrees.of(170)),
     IDLE(Degrees.of(140)),
-    PLACE_L4(Degrees.of(90)),
-    PLACE_L23(Degrees.of(37)),
+    PLACE_L2(Degrees.of(55)),
+    PLACE_L34(Degrees.of(37)),
     PLACE_L1(Degrees.of(62)),
     NET(Degrees.of(37));
 
@@ -60,7 +58,7 @@ public class Arm extends SubsystemBase {
   private final MechanismRoot2d armMech;
   private final MechanismLigament2d armLigament;
 
-  public Arm(Supplier<Elevator.ElevatorPosition> positionSupplier) {
+  public Arm() {
     motor = new SparkFlex(kMotorId, MotorType.kBrushless);
     motorConfig = new SparkFlexConfig();
     motorConfig
@@ -87,11 +85,12 @@ public class Arm extends SubsystemBase {
 
     // Log position setpoints for debugging
     for(ArmPosition pos : ArmPosition.values()) {
-      SmartDashboard.putData("Arm/Setpoint/" + pos.name(), setPostionCommand(pos).ignoringDisable(true));
+      SmartDashboard.putData("Arm/Setpoint/" + pos.name(), setPositionCommand(pos).ignoringDisable(true));
     }
 
     // Log PID for debugging
     SmartDashboard.putData("Arm/PID", pidController);
+
   }
 
   // private void setPosition(Angle position) {
@@ -111,15 +110,15 @@ public class Arm extends SubsystemBase {
 
 
   public boolean atPosition() {
-    return Math.abs(encoder.getPosition() - setpoint.getPosition().in(Rotations)) < kPositionEpsilon;
+    return Math.abs(encoder.getPosition() - setpoint.getPosition().in(Rotations)) < kRotationEpsilon.in(Rotations);
   }
 
-  public Command setPostionCommand(ArmPosition position) {
-    return new RunCommand(()->setPosition(position), this);
+  public Command setPositionCommand(ArmPosition position) {
+    return new InstantCommand(()->setPosition(position), this);
 
   }
   public Command setPostionWaitCommand(ArmPosition position) {
-    return new RunCommand(()->setPosition(position), this).until(this::atPosition);
+    return new InstantCommand(()->setPosition(position), this).until(this::atPosition);
   }
 
   @Override

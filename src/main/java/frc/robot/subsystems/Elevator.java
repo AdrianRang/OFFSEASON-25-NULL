@@ -13,6 +13,7 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -27,18 +28,18 @@ public class Elevator extends SubsystemBase {
     
 		L1(HOME.getPosition()),
 
-		L2(HOME.getPosition()), 
+		L2(8.0), 
 		L2_ALGAE(L2.getPosition()),
 
-		L3(30.0),
+		L3(16),
 		L3_ALGAE(L3.getPosition()),
 
-		L4(66.0),
+		L4(56.0),
 
 		STATION(5.0),
 
     INTAKE(2.5),
-    NET(35);
+    NET(60);
 
 		private double position;
 
@@ -62,6 +63,7 @@ public class Elevator extends SubsystemBase {
   private final SparkFlexConfig rightMotorConfig;
   
   private ElevatorPosition setpoint = ElevatorPosition.ZERO; 
+  private boolean pidEnabled = false;
 
   /** Creates a new Elevator. */
   public Elevator() {
@@ -119,9 +121,14 @@ public class Elevator extends SubsystemBase {
   }
 
   public ElevatorPosition getSetpoint() {
+    pidEnabled = true;
     return setpoint;
   }
 
+  public void setVoltage(double voltage) {
+    pidEnabled = false;
+    leftMotor.setVoltage(voltage);
+  }
 
   //? Removed because we changed to ProfiledPidContoller instead of integrated spark encoder
   /*
@@ -141,13 +148,18 @@ public class Elevator extends SubsystemBase {
     return Math.abs(setpoint.getPosition() - getEncoderPosition()) < kPositionEpsilon;
   }
 
-  // TODO: Check if these RunCommands should be InstantCommands instead
+  ///// TODO: Check if these RunCommands should be InstantCommands instead
+  //? Instant command as you set the setpoint not drive the motor (motor is run on periodic) (no need to continuously run the command)
   public Command setPostitionCommand(ElevatorPosition position) {
-    return new RunCommand(()->setSetpoint(position), this);
+    return new InstantCommand(()->setSetpoint(position), this);
   }
 
   public Command setPostitionWaitCommand(ElevatorPosition position) {
-    return new RunCommand(()->setSetpoint(position), this).until(this::isAtPosition);
+    return new InstantCommand(()->setSetpoint(position), this).until(this::isAtPosition);
+  }
+
+  public Command setVoltageCommand(double voltage) {
+    return new RunCommand(() -> setVoltage(voltage), this);
   }
 
   public void stop() {
@@ -165,8 +177,7 @@ public class Elevator extends SubsystemBase {
     // ? setpoint should be passed instead of pid value to ff?
     double ffResult = feedforward.calculate(pidResult);
 
-    leftMotor.setVoltage(pidResult);
-
+    if (pidEnabled) leftMotor.setVoltage(pidResult);
     // TODO: these 2 are the same
     SmartDashboard.putNumber("Elevator/RawPosition", leftEncoder.getPosition());
     SmartDashboard.putNumber("Elevator/Postition", getEncoderPosition());

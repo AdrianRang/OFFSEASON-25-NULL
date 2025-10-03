@@ -180,17 +180,17 @@ public final class Constants {
     public static final double kMaxHeight = 2.5; // Meters
     public static final double kMinHeight = 0; // Meters
     public static final double kRotationToHeightRatio = kMaxHeight / 35.0; // Rotations to meters
-    public static final double kPositionEpsilon = 0.2;
+    public static final double kPositionEpsilon = 1;
 
-
+    // TODO: Set BumpZone
     public static final double kBumpZone = 0.2;
 
     // PID controller
     public static final ProfiledPIDController pidController = new ProfiledPIDController(
-      3.0,
+      2.0,
       0.0,
       0.0,
-      new TrapezoidProfile.Constraints(130, 50)
+      new TrapezoidProfile.Constraints(250, 150)
     );
 
     // Feedforward
@@ -212,7 +212,9 @@ public final class Constants {
 
     // Angle limits
     public static final Angle kMin = Degrees.of(15);
-    public static final Angle kMax = Degrees.of(250);
+    public static final Angle kMax = Degrees.of(180);
+
+    public static final Angle kRotationEpsilon = Degrees.of(5);
 
     // PID controller
     public static final ProfiledPIDController pidController = new ProfiledPIDController(
@@ -240,29 +242,36 @@ public final class Constants {
       public static final double outakeSpeed = 0.5;
 
       public static final int currentLimit = 40;
+
+      public static final int checkCurrent = 7;
     }
 
     public static final class AlgeaConstants {
-      public static final double intakeCurrent = -3;
+      public static final double intakeCurrent = -8;
       public static final double outakeCurrent = 10;
 
-      public static final double checkCurrent = 30;
+      public static final double intakeSpeed = -0.5;
+      public static final double outakeSpeed = 0.5;
+      public static final double holdSpeed = -0.1;
 
-      public static final int currentLimit = 40;
+      public static final double checkCurrent = 10;
+
+      public static final int currentLimit = 20;
 
       // TODO: Tune Algea motor PID (current)
-      public static final int kP = 0;
-      public static final int kI = 0;
-      public static final int kD = 0;
+      public static final double kP = 0.1;
+      public static final double kI = 0;
+      public static final double kD = 0;
     }
   }
 
   public static enum RobotState {
     HOME(ArmPosition.IDLE, ElevatorPosition.HOME),
     L1(ArmPosition.PLACE_L1, Elevator.ElevatorPosition.L1),
-    L2(ArmPosition.PLACE_L23, Elevator.ElevatorPosition.L2),
-    L3(ArmPosition.PLACE_L23, Elevator.ElevatorPosition.L3),
-    L4(ArmPosition.PLACE_L4, Elevator.ElevatorPosition.L4);
+    L2(ArmPosition.PLACE_L2, ElevatorPosition.L2),
+    L3(ArmPosition.PLACE_L34, ElevatorPosition.L3),
+    L4(ArmPosition.PLACE_L34, ElevatorPosition.L4),
+    NET(ArmPosition.NET, ElevatorPosition.NET);
     
     private ArmPosition armPosition;
     private ElevatorPosition elevatorPosition;
@@ -274,6 +283,24 @@ public final class Constants {
 
     public ArmPosition getArmPosition() {return armPosition;}
     public ElevatorPosition getElevatorPosition() {return elevatorPosition;}
+  }
+
+  public static final class IntakeConstants {
+    // TODO: set IDS
+    public static final int kIntakeMotorId = 99; // TODO: not mounted yet
+    public static final int kIndexerMotorId = 30;
+    public static final int kPassMotorId = 43;
+    public static final int kCANrangeId = 41;
+
+    public static final double kCheckRange = 0.1;
+
+    public static final double kMotorCurrentLimit = 40;
+
+    public static final double kIntakeSpeed = -0.5;
+    public static final double kIndexSpeed = -0.5;
+    public static final double kPassSpeed = -0.4;
+
+    public static final double kEjectSpeed = 0.5; 
   }
 
   public static final double startupStatusSignalTimeout = 20;
