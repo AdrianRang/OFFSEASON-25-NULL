@@ -43,7 +43,7 @@ public class Robot extends LoggedRobot {
     // Instantiate the power distribution
     // Clear the sticky faults
     m_powerDistribution = new PowerDistribution();
-    m_powerDistribution.clearStickyFaults();
+    // m_powerDistribution.clearStickyFaults();
   }
 
   @Override

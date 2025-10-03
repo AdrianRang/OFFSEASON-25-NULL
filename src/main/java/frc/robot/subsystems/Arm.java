@@ -32,7 +32,8 @@ public class Arm extends SubsystemBase {
   public static enum ArmPosition {
     INTAKE(Degrees.of(220)),
     IDLE(Degrees.of(140)),
-    PLACE_L234(Degrees.of(37)),
+    PLACE_L4(Degrees.of(90)),
+    PLACE_L23(Degrees.of(37)),
     PLACE_L1(Degrees.of(62)),
     NET(Degrees.of(37));
 
@@ -44,27 +45,21 @@ public class Arm extends SubsystemBase {
     public Angle getPosition() {return position;}
   }
 
-  // Motor
   private final SparkFlex motor;
   private final SparkFlexConfig motorConfig;
 
-  // Encoder
   private final RelativeEncoder encoder;
 
-  // Absolute Encoder
   private final CANcoder absoluteEncoder;
 
-  // Setpoint
   private ArmPosition setpoint = ArmPosition.IDLE;
 
-  // Mechanism
+  // Mechanism (sim)
   private final Mechanism2d mech;
   private final MechanismRoot2d armMech;
   private final MechanismLigament2d armLigament;
 
-  /** Creates a new Arm. */
   public Arm(Supplier<Elevator.ElevatorPosition> positionSupplier) {
-    // Motor
     motor = new SparkFlex(kMotorId, MotorType.kBrushless);
     motorConfig = new SparkFlexConfig();
     motorConfig
@@ -77,16 +72,13 @@ public class Arm extends SubsystemBase {
       .positionConversionFactor(kConversionFactor);
     motor.configure(motorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
 
-    // Encoder
     encoder = motor.getEncoder();
 
-    // Absolute Encoder
     absoluteEncoder = new CANcoder(kAbsoluteEncoderId);
 
-    // Reset encoder
     encoder.setPosition(getAbsolutePosition().in(Rotations));
     
-    // Mechanism visualization
+    // Mechanism visualization (sim)
     mech = new Mechanism2d(1, 1, new Color8Bit(255, 255, 255));
     armMech = mech.getRoot("Arm", 0.5, 0.5);
     armLigament = new MechanismLigament2d("ArmLigament", 0.5, 90);

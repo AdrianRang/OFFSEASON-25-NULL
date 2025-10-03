@@ -52,14 +52,13 @@ public class Elevator extends SubsystemBase {
 		}
 	}
 
-  // Left Motor (MASTER)
+  // (MASTER)
   private final SparkFlex leftMotor;
   private final SparkFlexConfig leftMotorConfig;
 
-  // Encoder from left motor
   private final RelativeEncoder leftEncoder;
   
-  // Right Motor (SLAVE)
+  // (SLAVE)
   private final SparkFlex rightMotor;
   private final SparkFlexConfig rightMotorConfig;
   
@@ -83,13 +82,11 @@ public class Elevator extends SubsystemBase {
     // TODO: Encoder is not configured
     // ? Leave it like this?
     
-    // Configure motor
     this.leftMotor.configure(leftMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
 
-    // Encoder from left motor
     this.leftEncoder = leftMotor.getEncoder();
     
-    // * Right Motor (SLAVE)
+    // (SLAVE)
     this.rightMotor = new SparkFlex(rightMotorId, MotorType.kBrushless);
     this.rightMotorConfig = new SparkFlexConfig();
     this.rightMotorConfig
@@ -100,7 +97,6 @@ public class Elevator extends SubsystemBase {
     .smartCurrentLimit(kMototCurrentLimit)
     .voltageCompensation(12);
     
-    // Configure motor
     this.rightMotor.configure(rightMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
 
     // Log position setpoints for debugging
@@ -129,7 +125,9 @@ public class Elevator extends SubsystemBase {
     return setpoint;
   }
 
-  /**
+
+  //? Removed because we changed to ProfiledPidContoller instead of integrated spark encoder
+  /*
    * Sets the goal position for the elevator
    * @param position The setpoint position of the elevator in meters
    */

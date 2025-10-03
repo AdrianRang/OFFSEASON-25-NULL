@@ -16,7 +16,6 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
-import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Elevator.ElevatorPosition;
 import frc.robot.subsystems.Arm.ArmPosition;
@@ -188,10 +187,9 @@ public final class Constants {
     public static final double kMotorRampRate = 0.0;
     public static final int kMototCurrentLimit = 40;
 
-    //TODO: Update values
+    // TODO: Update values
     public static final double kMaxHeight = 2.5; // Meters
     public static final double kMinHeight = 0; // Meters
-    //! Encoders cannot have negative conversion factors, the motor has to be inverted so the value is inverted
     public static final double kRotationToHeightRatio = kMaxHeight / 35.0; // Rotations to meters
     public static final double kPositionEpsilon = 1.0;
 
@@ -257,13 +255,17 @@ public final class Constants {
     }
 
     public static final class AlgeaConstants {
-      public static final double intakeSpeed = -0.1;
-      public static final double holdSpeed = -0.1;
-      public static final double outakeSpeed = 0.5;
+      public static final double intakeCurrent = -3;
+      public static final double outakeCurrent = 10;
 
       public static final double checkCurrent = 30;
 
       public static final int currentLimit = 40;
+
+      // TODO: Tune Algea motor PID (current)
+      public static final int kP = 0;
+      public static final int kI = 0;
+      public static final int kD = 0;
     }
   }
 
@@ -271,9 +273,9 @@ public final class Constants {
     HOME(ArmPosition.IDLE, ElevatorPosition.HOME),
     INTAKE(ArmPosition.INTAKE, Elevator.ElevatorPosition.HOME),
     L1(ArmPosition.PLACE_L1, Elevator.ElevatorPosition.L1),
-    L2(ArmPosition.PLACE_L234, Elevator.ElevatorPosition.L2),
-    L3(ArmPosition.PLACE_L234, Elevator.ElevatorPosition.L3),
-    L4(ArmPosition.PLACE_L234, Elevator.ElevatorPosition.L4);
+    L2(ArmPosition.PLACE_L23, Elevator.ElevatorPosition.L2),
+    L3(ArmPosition.PLACE_L23, Elevator.ElevatorPosition.L3),
+    L4(ArmPosition.PLACE_L4, Elevator.ElevatorPosition.L4);
     
     private ArmPosition armPosition;
     private ElevatorPosition elevatorPosition;
