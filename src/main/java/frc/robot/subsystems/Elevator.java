@@ -11,11 +11,12 @@ import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
+
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
 import static frc.robot.Constants.ElevatorConstants.*;
 
 public class Elevator extends SubsystemBase {
@@ -28,17 +29,17 @@ public class Elevator extends SubsystemBase {
 		L1(HOME.getPosition()),
 
 		L2(HOME.getPosition()), 
-		L2_ALGAE(L2.getPosition()),
+		L2_ALGAE(L2.getPosition() + 10),
 
-		L3(30.0),
-		L3_ALGAE(L3.getPosition()),
+		L3(11.0),
+		L3_ALGAE(L3.getPosition() + 10),
 
-		L4(66.0),
+		L4(55.0),
 
 		STATION(5.0),
 
-    INTAKE(2.5),
-    NET(35);
+    INTAKE(1.5),
+    NET(65);
 
 		private double position;
 
@@ -61,7 +62,9 @@ public class Elevator extends SubsystemBase {
   private final SparkFlex rightMotor;
   private final SparkFlexConfig rightMotorConfig;
   
-  private ElevatorPosition setpoint = ElevatorPosition.ZERO; 
+  // Setpoint
+  private ElevatorPosition setpoint = ElevatorPosition.ZERO;
+  private boolean pidEnabled = false;
 
   /** Creates a new Elevator. */
   public Elevator() {
@@ -135,6 +138,12 @@ public class Elevator extends SubsystemBase {
 
   public void setSetpoint(ElevatorPosition position) {
     this.setpoint = position;
+    pidEnabled = true;
+  }
+
+  public void setVoltage(double voltage) {
+    pidEnabled = false;
+    leftMotor.setVoltage(voltage);
   }
 
   public boolean isAtPosition() {
@@ -148,6 +157,10 @@ public class Elevator extends SubsystemBase {
 
   public Command setPostitionWaitCommand(ElevatorPosition position) {
     return new RunCommand(()->setSetpoint(position), this).until(this::isAtPosition);
+  }
+
+  public Command setVoltageCommand(double voltage) {
+    return new RunCommand(() -> setVoltage(voltage), this);
   }
 
   public void stop() {
@@ -165,7 +178,7 @@ public class Elevator extends SubsystemBase {
     // ? setpoint should be passed instead of pid value to ff?
     double ffResult = feedforward.calculate(pidResult);
 
-    leftMotor.setVoltage(pidResult);
+    if (pidEnabled) leftMotor.setVoltage(pidResult);
 
     // TODO: these 2 are the same
     SmartDashboard.putNumber("Elevator/RawPosition", leftEncoder.getPosition());
