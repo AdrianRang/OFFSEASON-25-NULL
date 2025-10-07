@@ -176,14 +176,10 @@ public final class Constants {
     public static final double kMotorRampRate = 0.0;
     public static final int kMototCurrentLimit = 40;
 
-    // TODO: Update values
     public static final double kMaxHeight = 2.5; // Meters
     public static final double kMinHeight = 0; // Meters
     public static final double kRotationToHeightRatio = kMaxHeight / 35.0; // Rotations to meters
     public static final double kPositionEpsilon = 1;
-
-    // TODO: Set BumpZone
-    public static final double kBumpZone = 0.2;
 
     // PID controller
     public static final ProfiledPIDController pidController = new ProfiledPIDController(
@@ -257,11 +253,6 @@ public final class Constants {
       public static final double checkCurrent = 10;
 
       public static final int currentLimit = 20;
-
-      // TODO: Tune Algea motor PID (current)
-      public static final double kP = 0.1;
-      public static final double kI = 0;
-      public static final double kD = 0;
     }
   }
 
@@ -286,8 +277,7 @@ public final class Constants {
   }
 
   public static final class IntakeConstants {
-    // TODO: set IDS
-    public static final int kIntakeMotorId = 99; // TODO: not mounted yet
+    public static final int kIntakeMotorId = 31;
     public static final int kIndexerMotorId = 30;
     public static final int kPassMotorId = 43;
     public static final int kCANrangeId = 41;
@@ -296,7 +286,7 @@ public final class Constants {
 
     public static final double kMotorCurrentLimit = 40;
 
-    public static final double kIntakeSpeed = -0.5;
+    public static final double kIntakeSpeed = 0.5;
     public static final double kIndexSpeed = -0.5;
     public static final double kPassSpeed = -0.4;
 

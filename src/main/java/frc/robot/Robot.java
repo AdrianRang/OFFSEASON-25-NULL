@@ -1,5 +1,6 @@
 package frc.robot;
 
+import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
@@ -44,6 +45,8 @@ public class Robot extends LoggedRobot {
     // Clear the sticky faults
     m_powerDistribution = new PowerDistribution();
     m_powerDistribution.clearStickyFaults();
+
+    CameraServer.startAutomaticCapture();
   }
 
   @Override

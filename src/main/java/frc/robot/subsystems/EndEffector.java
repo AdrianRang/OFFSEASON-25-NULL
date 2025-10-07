@@ -5,10 +5,8 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
-import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
@@ -66,7 +64,6 @@ public class EndEffector extends SubsystemBase {
     // algaePid = algaeMotor.getClosedLoopController();
   }
 
-  // TODO: Test Algea by current
   public void intakeAlgae() {
     algaeMotor.set(AlgeaConstants.intakeSpeed);
     // algaePid.setReference(AlgeaConstants.intakeCurrent, ControlType.kCurrent);

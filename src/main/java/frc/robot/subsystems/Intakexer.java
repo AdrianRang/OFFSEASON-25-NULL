@@ -20,8 +20,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 
-public class Intake extends SubsystemBase {
+public class Intakexer extends SubsystemBase {
   private final SparkMax intakeMotor;
   private final SparkMaxConfig intakeMotorConfig;
   private final SparkMax indexMotor;
@@ -31,11 +32,12 @@ public class Intake extends SubsystemBase {
 
   private final CANrange checkSensor;
 
-  public Intake() {
+  public Intakexer() {
     intakeMotor = new SparkMax(kIntakeMotorId, MotorType.kBrushless);
     intakeMotorConfig = new SparkMaxConfig();
     intakeMotorConfig
-      .smartCurrentLimit(kMotorCurrentLimit);
+      .smartCurrentLimit(kMotorCurrentLimit)
+      .idleMode(IdleMode.kCoast);
     intakeMotor.configure(intakeMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
 
     indexMotor = new SparkMax(kIndexerMotorId, MotorType.kBrushless);
@@ -48,7 +50,8 @@ public class Intake extends SubsystemBase {
     passMotor = new SparkMax(kPassMotorId, MotorType.kBrushless);
     passMotorConfig = new SparkMaxConfig();
     passMotorConfig
-      .smartCurrentLimit(kMotorCurrentLimit);
+      .smartCurrentLimit(kMotorCurrentLimit)
+      .idleMode(IdleMode.kBrake);
     passMotor.configure(passMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
 
     checkSensor = new CANrange(kCANrangeId);
@@ -88,7 +91,7 @@ public class Intake extends SubsystemBase {
   }
 
   public Command intakeCommand() {
-    return new InstantCommand(this::startIntake, this).until(this::hasCoral);
+    return new InstantCommand(this::startIntake, this);
   }
 
   public Command ejectCommand() {
@@ -99,6 +102,11 @@ public class Intake extends SubsystemBase {
     return new InstantCommand(this::stop, this);
   }
 
+  public Command intakeWaitCommand() {
+    return intakeCommand()
+      .andThen(new WaitUntilCommand(this::hasCoral))
+      .andThen(stopCommand());
+  }
 
   @Override
   public void periodic() {

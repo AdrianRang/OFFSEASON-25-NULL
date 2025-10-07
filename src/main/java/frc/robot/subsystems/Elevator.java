@@ -21,7 +21,6 @@ import static frc.robot.Constants.ElevatorConstants.*;
 
 public class Elevator extends SubsystemBase {
   public static enum  ElevatorPosition {
-    // TODO: Update these values
     ZERO(0.0),
     
 		HOME(5.0),
@@ -78,8 +77,9 @@ public class Elevator extends SubsystemBase {
       .smartCurrentLimit(kMototCurrentLimit)
       .voltageCompensation(12);
     
-    // TODO: Encoder is not configured
+    // // TO DO: Encoder is not configured
     // ? Leave it like this?
+    // * Yes
     
     this.leftMotor.configure(leftMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
 
@@ -121,7 +121,6 @@ public class Elevator extends SubsystemBase {
   }
 
   public ElevatorPosition getSetpoint() {
-    pidEnabled = true;
     return setpoint;
   }
 
@@ -141,6 +140,7 @@ public class Elevator extends SubsystemBase {
   // }
 
   public void setSetpoint(ElevatorPosition position) {
+    pidEnabled = true;
     this.setpoint = position;
   }
 
@@ -148,7 +148,7 @@ public class Elevator extends SubsystemBase {
     return Math.abs(setpoint.getPosition() - getEncoderPosition()) < kPositionEpsilon;
   }
 
-  ///// TODO: Check if these RunCommands should be InstantCommands instead
+  ///// TO DO: Check if these RunCommands should be InstantCommands instead
   //? Instant command as you set the setpoint not drive the motor (motor is run on periodic) (no need to continuously run the command)
   public Command setPostitionCommand(ElevatorPosition position) {
     return new InstantCommand(()->setSetpoint(position), this);
@@ -162,11 +162,6 @@ public class Elevator extends SubsystemBase {
     return new RunCommand(() -> setVoltage(voltage), this);
   }
 
-  public void stop() {
-    // TODO: Implement this properly (PID will override it)
-    leftMotor.set(0);
-  }
-
   public void resetPID() {
     pidController.reset(getEncoderPosition());
   }
@@ -178,7 +173,7 @@ public class Elevator extends SubsystemBase {
     double ffResult = feedforward.calculate(pidResult);
 
     if (pidEnabled) leftMotor.setVoltage(pidResult);
-    // TODO: these 2 are the same
+    // // TO DO: these 2 are the same
     SmartDashboard.putNumber("Elevator/RawPosition", leftEncoder.getPosition());
     SmartDashboard.putNumber("Elevator/Postition", getEncoderPosition());
 

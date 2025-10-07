@@ -8,6 +8,8 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.Gyro.Gyro;
@@ -55,6 +57,8 @@ public class SwerveChassis extends SubsystemBase {
 
         //! ENCODERS ARE RESET IN EACH MODULE
         //! DO NOT RESET THEM HERE IN THE CONSTRUCTOR
+
+        SmartDashboard.putData("ZeroHeading", new InstantCommand(this::zeroHeading));
     }
 
     /**

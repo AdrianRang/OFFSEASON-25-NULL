@@ -8,11 +8,9 @@ import frc.robot.commands.ScoringCommands;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.EndEffector;
-import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Intakexer;
 import frc.robot.subsystems.SwerveChassis;
 import frc.robot.subsystems.SwerveModule;
-import frc.robot.subsystems.Arm.ArmPosition;
-import frc.robot.subsystems.Elevator.ElevatorPosition;
 import frc.robot.subsystems.Gyro.Gyro;
 import frc.robot.subsystems.Gyro.GyroIOPigeon;
 import lib.Elastic;
@@ -36,7 +34,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -63,7 +60,7 @@ public class RobotContainer {
 
   private final EndEffector endEffector;
 
-  private final Intake intake;
+  private final Intakexer intake;
 
   // * Autonomous
   private final SendableChooser<Command> m_autonomousChooser;
@@ -101,7 +98,7 @@ public class RobotContainer {
 
     this.endEffector = new EndEffector();
 
-    this.intake = new Intake();
+    this.intake = new Intakexer();
 
     // * Autonomous
     RobotConfig ppRobotConfig = null;
@@ -160,10 +157,8 @@ public class RobotContainer {
 
     // ! OPERATOR
     // Algae
-    // TODO: Try without limitswitch
-    Trigger algaeMode = OPERATOR.leftTrigger();
+    Trigger algaeMode = OPERATOR.leftTrigger(); // TODO CHANGE TO SETPOINTS
     OPERATOR.leftButton().and(algaeMode).onTrue(new RunCommand(endEffector::intakeAlgae, endEffector));
-    OPERATOR.leftButton().and(algaeMode).onFalse(new RunCommand(endEffector::stopAlgae, endEffector));
     OPERATOR.topButton().and(algaeMode).onTrue(new RunCommand(endEffector::outakeAlgae, endEffector));
     OPERATOR.topButton().and(algaeMode).onFalse(new RunCommand(endEffector::stopAlgae, endEffector));
 
@@ -182,6 +177,7 @@ public class RobotContainer {
     DRIVER.topButton().onFalse(new RunCommand(endEffector::stopCoral, endEffector));
     DRIVER.leftButton().onTrue(new RunCommand(endEffector::intakeCoral, endEffector));
     DRIVER.leftButton().onFalse(new RunCommand(endEffector::stopCoral, endEffector));
+    DRIVER.rightButton().onTrue(IntakeCommands.completeIntakeCommand_R(intake, arm, elevator, endEffector));
 
     DRIVER.leftBumper().onTrue(elevator.setVoltageCommand(-4));
     DRIVER.leftBumper().onFalse(elevator.setVoltageCommand(0));
@@ -198,9 +194,6 @@ public class RobotContainer {
     DRIVER.povLeft().onTrue(ScoringCommands.setRobotState(RobotState.L3, arm, elevator));
     DRIVER.povRight().onTrue(ScoringCommands.setRobotState(RobotState.L2, arm, elevator));
     DRIVER.povDown().onTrue(ScoringCommands.setRobotState(RobotState.L1, arm, elevator));
-
-    // ! TODO: If the command used to set the elevator position doesn't run constantly this will override it
-    // this.elevator.setDefaultCommand(elevator.setPostitionCommand(ElevatorPosition.HOME));
   }
 
   /**
