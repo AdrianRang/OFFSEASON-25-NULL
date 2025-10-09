@@ -17,10 +17,13 @@ import lib.Elastic;
 import lib.Elastic.Notification;
 import lib.Elastic.Notification.NotificationLevel;
 import lib.BlueShift.control.CustomController;
+import lib.BlueShift.control.ToggleTrigger;
 import lib.BlueShift.control.CustomController.CustomControllerType;
 import lib.BlueShift.odometry.swerve.BlueShiftOdometry;
 import lib.BlueShift.odometry.vision.camera.LimelightOdometryCamera;
 import lib.BlueShift.odometry.vision.camera.VisionOdometryFilters;
+
+import org.littletonrobotics.junction.Logger;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.RobotConfig;
@@ -157,26 +160,33 @@ public class RobotContainer {
 
     // ! OPERATOR
     // Algae
-    Trigger algaeMode = OPERATOR.leftTrigger(); // TODO CHANGE TO SETPOINTS
-    OPERATOR.leftButton().and(algaeMode).onTrue(new RunCommand(endEffector::intakeAlgae, endEffector));
-    OPERATOR.topButton().and(algaeMode).onTrue(new RunCommand(endEffector::outakeAlgae, endEffector));
-    OPERATOR.topButton().and(algaeMode).onFalse(new RunCommand(endEffector::stopAlgae, endEffector));
+    ToggleTrigger algaeMode = new ToggleTrigger(OPERATOR.leftBumper());
+
+    OPERATOR.leftButton().and(() -> algaeMode.getAsBoolean()).onTrue(new RunCommand(endEffector::intakeAlgae, endEffector));
+    OPERATOR.topButton().and(() -> algaeMode.getAsBoolean()).onTrue(new RunCommand(endEffector::outakeAlgae, endEffector));
+    OPERATOR.topButton().and(() -> algaeMode.getAsBoolean()).onFalse(new RunCommand(endEffector::stopAlgae, endEffector));
+
+    DRIVER.leftButton().and(() -> algaeMode.getAsBoolean()).onTrue(new RunCommand(endEffector::intakeAlgae, endEffector));
+    DRIVER.topButton().and(() -> algaeMode.getAsBoolean()).onTrue(new RunCommand(endEffector::outakeAlgae, endEffector));
+    DRIVER.topButton().and(() -> algaeMode.getAsBoolean()).onFalse(new RunCommand(endEffector::stopAlgae, endEffector));
 
     // Coral
-    OPERATOR.leftButton().and(algaeMode.negate()).onTrue(new RunCommand(endEffector::intakeCoral, endEffector));
-    OPERATOR.leftButton().and(algaeMode.negate()).onFalse(new RunCommand(endEffector::stopCoral, endEffector));
-    OPERATOR.topButton().and(algaeMode.negate()).onTrue(new RunCommand(endEffector::outakeCoral, endEffector));
-    OPERATOR.topButton().and(algaeMode.negate()).onFalse(new RunCommand(endEffector::stopCoral, endEffector));
-    // OPERATOR.rightButton().onTrue(new ParallelCommandGroup(new RunCommand(intake::startIntake, intake), new RunCommand(endEffector::intakeCoral, endEffector), elevator.setPostitionCommand(ElevatorPosition.INTAKE), arm.setPositionCommand(ArmPosition.INTAKE)));
-    // OPERATOR.rightButton().onFalse(new ParallelCommandGroup(new RunCommand(intake::stop, intake), new RunCommand(endEffector::stopCoral, endEffector)));
-    OPERATOR.rightButton().onTrue(IntakeCommands.completeIntakeCommand(intake, arm, elevator, endEffector));
+    OPERATOR.leftButton().and(() -> !algaeMode.getAsBoolean()).onTrue(new RunCommand(endEffector::intakeCoral, endEffector));
+    OPERATOR.leftButton().and(() -> !algaeMode.getAsBoolean()).onFalse(new RunCommand(endEffector::stopCoral, endEffector));
+
+    OPERATOR.topButton().and(() -> !algaeMode.getAsBoolean()).onTrue(new RunCommand(endEffector::outakeCoral, endEffector));
+    OPERATOR.topButton().and(() -> !algaeMode.getAsBoolean()).onFalse(new RunCommand(endEffector::stopCoral, endEffector));
+
+    OPERATOR.rightButton().onTrue(IntakeCommands.completeIntakeCommand_R(intake, arm, elevator, endEffector));
     OPERATOR.bottomButton().onTrue(intake.ejectCommand());
     OPERATOR.bottomButton().onFalse(intake.stopCommand());
 
-    DRIVER.topButton().onTrue(new RunCommand(endEffector::outakeCoral, endEffector));
-    DRIVER.topButton().onFalse(new RunCommand(endEffector::stopCoral, endEffector));
-    DRIVER.leftButton().onTrue(new RunCommand(endEffector::intakeCoral, endEffector));
-    DRIVER.leftButton().onFalse(new RunCommand(endEffector::stopCoral, endEffector));
+    DRIVER.topButton().and(() -> !algaeMode.getAsBoolean()).onTrue(new RunCommand(endEffector::outakeCoral, endEffector));
+    DRIVER.topButton().and(() -> !algaeMode.getAsBoolean()).onFalse(new RunCommand(endEffector::stopCoral, endEffector));
+
+    DRIVER.leftButton().and(() -> !algaeMode.getAsBoolean()).onTrue(new RunCommand(endEffector::intakeCoral, endEffector));
+    DRIVER.leftButton().and(() -> !algaeMode.getAsBoolean()).onFalse(new RunCommand(endEffector::stopCoral, endEffector));
+
     DRIVER.rightButton().onTrue(IntakeCommands.completeIntakeCommand_R(intake, arm, elevator, endEffector));
 
     DRIVER.leftBumper().onTrue(elevator.setVoltageCommand(-4));
@@ -184,16 +194,25 @@ public class RobotContainer {
     DRIVER.rightBumper().onTrue(elevator.setVoltageCommand(4));
     DRIVER.rightBumper().onFalse(elevator.setVoltageCommand(0));
 
-    OPERATOR.povUp().onTrue(ScoringCommands.setRobotState(RobotState.L4, arm, elevator));
-    OPERATOR.povLeft().onTrue(ScoringCommands.setRobotState(RobotState.L3, arm, elevator));
-    OPERATOR.povRight().onTrue(ScoringCommands.setRobotState(RobotState.L2, arm, elevator));
-    OPERATOR.povDown().onTrue(ScoringCommands.setRobotState(RobotState.L1, arm, elevator));
+    OPERATOR.povUp().and(algaeMode.negate()).onTrue(ScoringCommands.setRobotState(RobotState.L4, arm, elevator));
+    OPERATOR.povRight().and(algaeMode.negate()).onTrue(ScoringCommands.setRobotState(RobotState.L2, arm, elevator));
+    OPERATOR.povLeft().and(algaeMode.negate()).onTrue(ScoringCommands.setRobotState(RobotState.L3, arm, elevator));
+    
+    OPERATOR.povUp().and(algaeMode).onTrue(ScoringCommands.setRobotState(RobotState.NET, arm, elevator));
+    OPERATOR.povLeft().and(algaeMode).onTrue(ScoringCommands.setRobotState(RobotState.L3_ALGAE, arm, elevator));
+    OPERATOR.povRight().and(algaeMode).onTrue(ScoringCommands.setRobotState(RobotState.L2_ALGAE, arm, elevator));
+    
+    OPERATOR.povDown().onTrue(ScoringCommands.setRobotState(RobotState.HOME, arm, elevator));
 
-
-    DRIVER.povUp().onTrue(ScoringCommands.setRobotState(RobotState.L4, arm, elevator));
-    DRIVER.povLeft().onTrue(ScoringCommands.setRobotState(RobotState.L3, arm, elevator));
-    DRIVER.povRight().onTrue(ScoringCommands.setRobotState(RobotState.L2, arm, elevator));
-    DRIVER.povDown().onTrue(ScoringCommands.setRobotState(RobotState.L1, arm, elevator));
+    DRIVER.povUp().and(algaeMode.negate()).onTrue(ScoringCommands.setRobotState(RobotState.L4, arm, elevator));
+    DRIVER.povLeft().and(algaeMode.negate()).onTrue(ScoringCommands.setRobotState(RobotState.L3, arm, elevator));
+    DRIVER.povRight().and(algaeMode.negate()).onTrue(ScoringCommands.setRobotState(RobotState.L2, arm, elevator));
+    
+    DRIVER.povUp().and(algaeMode).onTrue(ScoringCommands.setRobotState(RobotState.NET, arm, elevator));
+    DRIVER.povLeft().and(algaeMode).onTrue(ScoringCommands.setRobotState(RobotState.L3_ALGAE, arm, elevator));
+    DRIVER.povRight().and(algaeMode).onTrue(ScoringCommands.setRobotState(RobotState.L2_ALGAE, arm, elevator));
+    
+    DRIVER.povDown().onTrue(ScoringCommands.setRobotState(RobotState.HOME, arm, elevator));
   }
 
   /**

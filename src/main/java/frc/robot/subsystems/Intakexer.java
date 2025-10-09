@@ -71,7 +71,7 @@ public class Intakexer extends SubsystemBase {
   }
 
   private void eject() {
-    intakeMotor.set(kEjectSpeed);
+    intakeMotor.set(-kEjectSpeed);
     indexMotor.set(kEjectSpeed);
     passMotor.set(kEjectSpeed);
   }

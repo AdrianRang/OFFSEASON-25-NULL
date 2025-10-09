@@ -173,6 +173,7 @@ public final class Constants {
   public static final class ElevatorConstants {
     public static final int leftMotorId = 57;
     public static final int rightMotorId = 58;
+    public static final int kEncoderId = 46;
     public static final double kMotorRampRate = 0.0;
     public static final int kMototCurrentLimit = 40;
 
@@ -260,8 +261,10 @@ public final class Constants {
     HOME(ArmPosition.IDLE, ElevatorPosition.HOME),
     L1(ArmPosition.PLACE_L1, Elevator.ElevatorPosition.L1),
     L2(ArmPosition.PLACE_L2, ElevatorPosition.L2),
-    L3(ArmPosition.PLACE_L34, ElevatorPosition.L3),
-    L4(ArmPosition.PLACE_L34, ElevatorPosition.L4),
+    L2_ALGAE(ArmPosition.ALGAE, ElevatorPosition.L2_ALGAE),
+    L3_ALGAE(ArmPosition.ALGAE, ElevatorPosition.L3_ALGAE),
+    L3(ArmPosition.PLACE_L3, ElevatorPosition.L3),
+    L4(ArmPosition.PLACE_L4, ElevatorPosition.L4),
     NET(ArmPosition.NET, ElevatorPosition.NET);
     
     private ArmPosition armPosition;
@@ -286,7 +289,7 @@ public final class Constants {
 
     public static final double kMotorCurrentLimit = 40;
 
-    public static final double kIntakeSpeed = 0.5;
+    public static final double kIntakeSpeed = 0.8;
     public static final double kIndexSpeed = -0.5;
     public static final double kPassSpeed = -0.4;
 

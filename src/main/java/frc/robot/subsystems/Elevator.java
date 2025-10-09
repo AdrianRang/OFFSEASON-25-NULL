@@ -6,6 +6,7 @@ package frc.robot.subsystems;
 
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
+import com.ctre.phoenix6.hardware.CANcoder;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
@@ -21,40 +22,43 @@ import static frc.robot.Constants.ElevatorConstants.*;
 
 public class Elevator extends SubsystemBase {
   public static enum  ElevatorPosition {
+    // TODO: RESET POSITIONS (Absolute encoder)
+    // ? divide by motor gear ratio?
     ZERO(0.0),
-    
-		HOME(5.0),
+    // - // ERROR SO I DONT FORGET TO CHANGE THESE
+		HOME(0.33),
     
 		L1(HOME.getPosition()),
 
-		L2(8.0), 
-		L2_ALGAE(L2.getPosition()),
+		L2(0.53), 
+		L2_ALGAE(L2.getPosition() + 1),
 
-		L3(16),
-		L3_ALGAE(L3.getPosition()),
+		L3(2.5),
+		L3_ALGAE(L3.getPosition() + 1),
 
-		L4(56.0),
+		L4(7.6),
 
-		STATION(5.0),
+		STATION(5.0 / 15.0),
 
-    INTAKE(2.5),
-    NET(60);
+    INTAKE(2.5 / 15.0),
+    NET(60 / 15.0);
 
+    
 		private double position;
-
+    
 		private ElevatorPosition(double position) {
-			this.position = position;
+      this.position = position;
 		}
-
+    
 		public double getPosition() {
-			return position;
+      return position;
 		}
 	}
-
+  
   // (MASTER)
   private final SparkFlex leftMotor;
   private final SparkFlexConfig leftMotorConfig;
-
+  
   private final RelativeEncoder leftEncoder;
   
   // (SLAVE)
@@ -64,6 +68,8 @@ public class Elevator extends SubsystemBase {
   private ElevatorPosition setpoint = ElevatorPosition.ZERO; 
   private boolean pidEnabled = false;
 
+  private final CANcoder absoluteEncoder;
+  
   /** Creates a new Elevator. */
   public Elevator() {
     // * Left Motor (MASTER)
@@ -98,6 +104,8 @@ public class Elevator extends SubsystemBase {
     
     this.rightMotor.configure(rightMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
 
+    this.absoluteEncoder = new CANcoder(kEncoderId);
+
     // Log position setpoints for debugging
     for(ElevatorPosition pos : ElevatorPosition.values()) {
       SmartDashboard.putData("Elevator/Setpoint/" + pos.name(), setPostitionCommand(pos).ignoringDisable(true));
@@ -105,19 +113,27 @@ public class Elevator extends SubsystemBase {
 
     // Log PID for debugging
     SmartDashboard.putData("Elevator/PID", pidController);
+
+    SmartDashboard.putData("Elevator/SmartReset", new InstantCommand(this::smartResetEncoder));
+    SmartDashboard.putData("Elevator/Reset", new InstantCommand(this::resetEncoder));
   }
 
   
   public void setEncoder(double position) {
-    leftEncoder.setPosition(position);
+    absoluteEncoder.setPosition(position);
   }
 
   public void resetEncoder() {
     setEncoder(0.0);
   }
 
+  public void smartResetEncoder() {
+    setEncoder(absoluteEncoder.getAbsolutePosition().getValueAsDouble());
+  }
+
   public double getEncoderPosition() {
-    return leftEncoder.getPosition();
+    // return leftEncoder.getPosition();
+    return absoluteEncoder.getPosition().getValueAsDouble();
   }
 
   public ElevatorPosition getSetpoint() {
@@ -175,7 +191,10 @@ public class Elevator extends SubsystemBase {
     if (pidEnabled) leftMotor.setVoltage(pidResult);
     // // TO DO: these 2 are the same
     SmartDashboard.putNumber("Elevator/RawPosition", leftEncoder.getPosition());
-    SmartDashboard.putNumber("Elevator/Postition", getEncoderPosition());
+    SmartDashboard.putNumber("Elevator/Position", getEncoderPosition());
+
+    SmartDashboard.putNumber("Elevator/AbsolutePosition", absoluteEncoder.getAbsolutePosition().getValueAsDouble());
+    // SmartDashboard.putNumber("Elevator/PostitionTop", absoluteEncoder.getPosition().getValueAsDouble());
 
     SmartDashboard.putBoolean("Elevator/IsAtPosition", isAtPosition());
     SmartDashboard.putNumber("Elevator/setpoint", setpoint.getPosition());
