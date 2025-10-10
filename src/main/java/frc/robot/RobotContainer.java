@@ -150,6 +150,8 @@ public class RobotContainer {
         () -> !DRIVER.bottomButton().getAsBoolean()
       )
     );
+
+    DRIVER.rightStickButton().onTrue(new InstantCommand(chassis::zeroHeading));
     
     // DRIVER.povRight().onTrue(elevator.setPostitionCommand(ElevatorPosition.L3));
     // DRIVER.povLeft().onTrue(elevator.setPostitionCommand(ElevatorPosition.L2));
