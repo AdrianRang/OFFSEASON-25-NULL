@@ -107,7 +107,7 @@ public class Arm extends SubsystemBase {
   }
 
   public Angle getAbsolutePosition() {
-    return absoluteEncoder.getAbsolutePosition().refresh().getValue();
+    return absoluteEncoder.getAbsolutePosition().refresh().getValue().plus(kOAngleffset);
   }
 
 

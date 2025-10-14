@@ -10,7 +10,10 @@ public class ToggleTrigger extends Trigger {
 
   public ToggleTrigger(Trigger baseTrigger) {
     super(() -> baseTrigger.getAsBoolean());
-    baseTrigger.onTrue(new InstantCommand(() -> {state = !state; Logger.recordOutput("AlgaeMode", state);}));
+    baseTrigger.onTrue(new InstantCommand(() -> {
+      state = !state;
+      Logger.recordOutput("AlgaeMode", state);
+    }));
   }
 
   @Override

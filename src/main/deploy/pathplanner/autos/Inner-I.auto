@@ -7,43 +7,31 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Outer-Reef_I"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Score"
+            "pathName": "Inner-I"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "ReefI-BlueCoral-ReefL"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Score"
+            "pathName": "I-Station"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "ReefL-MidCoral-ReefA"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Score"
+            "pathName": "Station-K"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "ReefA-RedCoral-ReefC"
+            "pathName": "K-Station"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Station-L"
           }
         }
       ]

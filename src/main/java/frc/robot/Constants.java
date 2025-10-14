@@ -8,6 +8,7 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.measure.Angle;
@@ -16,6 +17,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.units.measure.Mass;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Elevator.ElevatorPosition;
 import frc.robot.subsystems.Arm.ArmPosition;
@@ -98,8 +100,8 @@ public final class Constants {
       public static final Distance kWheelBase = Inches.of(26);
 
       // Create a kinematics instance with the positions of the swerve modules
-      public static final SwerveDriveKinematics kDriveKinematics = new SwerveDriveKinematics(
-          SwerveChassis.sizeToModulePositions(kTrackWidth.in(Meters), kWheelBase.in(Meters)));
+      public static final Translation2d[] kModuleTranslations = SwerveChassis.sizeToModulePositions(kTrackWidth.in(Meters), kWheelBase.in(Meters));
+      public static final SwerveDriveKinematics kDriveKinematics = new SwerveDriveKinematics(kModuleTranslations);
 
       // Path constraints
       public static final PathConstraints kPathConstraints = new PathConstraints(kMaxSpeed, kMaxAcceleration,
@@ -177,10 +179,16 @@ public final class Constants {
     public static final double kMotorRampRate = 0.0;
     public static final int kMototCurrentLimit = 40;
 
-    public static final double kMaxHeight = 2.5; // Meters
-    public static final double kMinHeight = 0; // Meters
-    public static final double kRotationToHeightRatio = kMaxHeight / 35.0; // Rotations to meters
+    public static final Distance kMaxHeight = Meters.of(2.5); // Meters
+    public static final Distance kMinHeight = Meters.of(0); // Meters
+    public static final double kRotationToHeightRatio = kMaxHeight.in(Meters) / 35.0; // Rotations to meters
     public static final double kPositionEpsilon = 1;
+
+    public final class PhysicalModel {
+      public static final double gearing = 20.0;
+      public static final Distance spoolDiameter = Inches.of(1);
+      public static final Mass carriageMass = Pounds. of(20);
+    }
 
     // PID controller
     public static final ProfiledPIDController pidController = new ProfiledPIDController(
@@ -210,6 +218,8 @@ public final class Constants {
     // Angle limits
     public static final Angle kMin = Degrees.of(15);
     public static final Angle kMax = Degrees.of(180);
+
+    public static final Angle kOAngleffset = Degrees.of(-90);
 
     public static final Angle kRotationEpsilon = Degrees.of(5);
 
