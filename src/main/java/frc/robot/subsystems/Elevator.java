@@ -31,17 +31,17 @@ public class Elevator extends SubsystemBase {
 		L1(HOME.getPosition()),
 
 		L2(0.53), 
-		L2_ALGAE(L2.getPosition() + 1),
+		L2_ALGAE(L2.getPosition() + 2.7),
 
 		L3(2.5),
-		L3_ALGAE(L3.getPosition() + 1),
+		L3_ALGAE(6.4),
 
-		L4(7.6),
+		L4(7.7),
 
 		STATION(5.0 / 15.0),
 
     INTAKE(2.5 / 15.0),
-    NET(60 / 15.0);
+    NET(9.2);
 
     
 		private double position;
@@ -156,6 +156,7 @@ public class Elevator extends SubsystemBase {
   // }
 
   public void setSetpoint(ElevatorPosition position) {
+    pidController.reset(getEncoderPosition());
     pidEnabled = true;
     this.setpoint = position;
   }
@@ -186,10 +187,11 @@ public class Elevator extends SubsystemBase {
   public void periodic() {
     double pidResult = pidController.calculate(getEncoderPosition(), setpoint.getPosition());
     // ? setpoint should be passed instead of pid value to ff?
-    double ffResult = feedforward.calculate(pidResult);
+    // ! No ff is velocity controller
+    double ffResult = feedforward.calculate(0);
 
     if (pidEnabled) leftMotor.setVoltage(pidResult);
-    // // TO DO: these 2 are the same
+    // if (pidEnabled) leftMotor.setVoltage(ffResult/10.0);
     SmartDashboard.putNumber("Elevator/RawPosition", leftEncoder.getPosition());
     SmartDashboard.putNumber("Elevator/Position", getEncoderPosition());
 

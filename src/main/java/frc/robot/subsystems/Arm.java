@@ -31,12 +31,12 @@ public class Arm extends SubsystemBase {
   public static enum ArmPosition {
     INTAKE(Degrees.of(170)),
     IDLE(Degrees.of(140)),
-    PLACE_L2(Degrees.of(37)),
+    PLACE_L2(Degrees.of(43)),
     PLACE_L3(Degrees.of(37)),
     PLACE_L4(Degrees.of(50)),
     PLACE_L1(Degrees.of(62)),
-    ALGAE(Degrees.of(100)),
-    NET(Degrees.of(37));
+    ALGAE(Degrees.of(140)),
+    NET(Degrees.of(20));
 
     private Angle position;
     private ArmPosition(Angle position) {

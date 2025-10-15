@@ -16,6 +16,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Elevator.ElevatorPosition;
 import frc.robot.subsystems.Arm.ArmPosition;
@@ -193,8 +194,8 @@ public final class Constants {
     // Feedforward
     // TODO: CAREFULY CHECK THE BEHAVIOR OF THE ELEVATOR WITH FF
     // TODO: Tune kS manually, to tune it, set all other values to 0, then slowly increase the value until the elevator moves ever so slightly
-    // Calculated with: https://www.reca.lc/linear?angle=%7B%22s%22%3A90%2C%22u%22%3A%22deg%22%7D&currentLimit=%7B%22s%22%3A40%2C%22u%22%3A%22A%22%7D&efficiency=90&limitAcceleration=0&limitDeceleration=0&limitVelocity=0&limitedAcceleration=%7B%22s%22%3A400%2C%22u%22%3A%22in%2Fs2%22%7D&limitedDeceleration=%7B%22s%22%3A50%2C%22u%22%3A%22in%2Fs2%22%7D&limitedVelocity=%7B%22s%22%3A10%2C%22u%22%3A%22in%2Fs%22%7D&load=%7B%22s%22%3A20%2C%22u%22%3A%22lbs%22%7D&motor=%7B%22quantity%22%3A2%2C%22name%22%3A%22NEO%20Vortex%2A%22%7D&ratio=%7B%22magnitude%22%3A20%2C%22ratioType%22%3A%22Reduction%22%7D&spoolDiameter=%7B%22s%22%3A1%2C%22u%22%3A%22in%22%7D&travelDistance=%7B%22s%22%3A2.5%2C%22u%22%3A%22m%22%7D
-    public static final ElevatorFeedforward feedforward = new ElevatorFeedforward(0.0, 0.08, 26.60);
+    // Calculated with: https://www.reca.lc/linear?angle=%7B%22s%22:90,%22u%22:%22deg%22%7D&currentLimit=%7B%22s%22:40,%22u%22:%22A%22%7D&efficiency=90&limitAcceleration=0&limitDeceleration=0&limitVelocity=0&limitedAcceleration=%7B%22s%22:400,%22u%22:%22in/s2%22%7D&limitedDeceleration=%7B%22s%22:50,%22u%22:%22in/s2%22%7D&limitedVelocity=%7B%22s%22:10,%22u%22:%22in/s%22%7D&load=%7B%22s%22:20,%22u%22:%22lbs%22%7D&motor=%7B%22quantity%22:2,%22name%22:%22NEO%20Vortex*%22%7D&ratio=%7B%22magnitude%22:20,%22ratioType%22:%22Reduction%22%7D&spoolDiameter=%7B%22s%22:1,%22u%22:%22in%22%7D&travelDistance=%7B%22s%22:2.5,%22u%22:%22m%22%7D
+    public static final ElevatorFeedforward feedforward = new ElevatorFeedforward(0.75, 0.4, 9.21);
   }
 
   public static final class ArmConstants {
@@ -244,12 +245,9 @@ public final class Constants {
     }
 
     public static final class AlgeaConstants {
-      public static final double intakeCurrent = -8;
-      public static final double outakeCurrent = 10;
-
-      public static final double intakeSpeed = -0.5;
-      public static final double outakeSpeed = 0.5;
-      public static final double holdSpeed = -0.1;
+      public static final double intakeSpeed = 0.5;
+      public static final double outakeSpeed = -0.8;
+      public static final double holdSpeed = 0.1;
 
       public static final double checkCurrent = 10;
 

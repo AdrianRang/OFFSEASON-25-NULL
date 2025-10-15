@@ -189,9 +189,9 @@ public class RobotContainer {
 
     DRIVER.rightButton().onTrue(IntakeCommands.completeIntakeCommand_R(intake, arm, elevator, endEffector));
 
-    DRIVER.leftBumper().onTrue(elevator.setVoltageCommand(-4));
+    DRIVER.leftBumper().onTrue(elevator.setVoltageCommand(-2));
     DRIVER.leftBumper().onFalse(elevator.setVoltageCommand(0));
-    DRIVER.rightBumper().onTrue(elevator.setVoltageCommand(4));
+    DRIVER.rightBumper().onTrue(elevator.setVoltageCommand(6));
     DRIVER.rightBumper().onFalse(elevator.setVoltageCommand(0));
 
     OPERATOR.povUp().and(algaeMode.negate()).onTrue(ScoringCommands.setRobotState(RobotState.L4, arm, elevator));
@@ -213,6 +213,12 @@ public class RobotContainer {
     DRIVER.povRight().and(algaeMode).onTrue(ScoringCommands.setRobotState(RobotState.L2_ALGAE, arm, elevator));
     
     DRIVER.povDown().onTrue(ScoringCommands.setRobotState(RobotState.HOME, arm, elevator));
+
+    //! TEST
+    // Auto lower elevator when dipping
+    Trigger dipping = new Trigger(()->chassis.getDip()<45);
+    Logger.recordOutput("dipping", dipping);
+    // dipping.whileTrue(ScoringCommands.setRobotState(RobotState.HOME, arm, elevator));
   }
 
   /**

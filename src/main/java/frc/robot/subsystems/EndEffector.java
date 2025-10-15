@@ -146,7 +146,7 @@ public class EndEffector extends SubsystemBase {
 
   @Override
   public void periodic() {
-    if (algaeDebouncer.calculate(algaeMotor.getOutputCurrent() > AlgeaConstants.checkCurrent)) {
+    if (algaeDebouncer.calculate(algaeMotor.getOutputCurrent() > AlgeaConstants.checkCurrent) && algaeMotor.getAppliedOutput() > 0) {
       algae = true;
     }
 
