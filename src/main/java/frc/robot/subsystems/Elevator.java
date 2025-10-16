@@ -25,7 +25,6 @@ public class Elevator extends SubsystemBase {
     // TODO: RESET POSITIONS (Absolute encoder)
     // ? divide by motor gear ratio?
     ZERO(0.0),
-    // - // ERROR SO I DONT FORGET TO CHANGE THESE
 		HOME(0.33),
     
 		L1(HOME.getPosition()),

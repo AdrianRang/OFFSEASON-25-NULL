@@ -292,6 +292,27 @@ public final class Constants {
     public static final double kPassSpeed = -0.4;
 
     public static final double kEjectSpeed = 0.5; 
+
+    public static final class PivotConstants {
+      public static final int kMotorId = 32;
+      public static final int kEncoderId = 33;
+
+      public static final int kMotorCurrentLimit = 40;
+      public static final int kMotorLowerCurrentLimit = 30;
+      public static final double kMotorRampRate = 0.0;
+
+      public static final double kDownPos = 0.08;
+      public static final double kUpPos = -0.28;
+      public static final double kEpsilon = 0.01;
+
+      public static final ProfiledPIDController pid = new ProfiledPIDController(
+        6.0,
+        0.6,
+        0.0,
+        new TrapezoidProfile.Constraints(10.0, 2.0));
+
+      public static final ArmFeedforward feedforward = new ArmFeedforward(0.4, 0.72, 1.86, 0.15);
+    }
   }
 
   public static final double startupStatusSignalTimeout = 20;

@@ -9,6 +9,7 @@ import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.EndEffector;
 import frc.robot.subsystems.Intakexer;
+import frc.robot.subsystems.IntaxerPivot;
 import frc.robot.subsystems.SwerveChassis;
 import frc.robot.subsystems.SwerveModule;
 import frc.robot.subsystems.Gyro.Gyro;
@@ -65,6 +66,8 @@ public class RobotContainer {
 
   private final Intakexer intake;
 
+  private final IntaxerPivot pivot;
+
   // * Autonomous
   private final SendableChooser<Command> m_autonomousChooser;
 
@@ -102,6 +105,8 @@ public class RobotContainer {
     this.endEffector = new EndEffector();
 
     this.intake = new Intakexer();
+
+    this.pivot = new IntaxerPivot();
 
     // * Autonomous
     RobotConfig ppRobotConfig = null;
@@ -213,6 +218,9 @@ public class RobotContainer {
     DRIVER.povRight().and(algaeMode).onTrue(ScoringCommands.setRobotState(RobotState.L2_ALGAE, arm, elevator));
     
     DRIVER.povDown().onTrue(ScoringCommands.setRobotState(RobotState.HOME, arm, elevator));
+
+    OPERATOR.backButton().onTrue(pivot.setDownCommand());
+    OPERATOR.startButton().onTrue(pivot.setUpCommand());
 
     //! TEST
     // Auto lower elevator when dipping
