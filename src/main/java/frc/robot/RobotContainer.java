@@ -24,9 +24,13 @@ import lib.BlueShift.control.ToggleTrigger;
 import lib.BlueShift.control.CustomController.CustomControllerType;
 import lib.BlueShift.odometry.swerve.BlueShiftOdometry;
 import lib.BlueShift.odometry.vision.camera.LimelightOdometryCamera;
+import lib.BlueShift.odometry.vision.camera.PhotonOdometryCamera;
 import lib.BlueShift.odometry.vision.camera.VisionOdometryFilters;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
+import static edu.wpi.first.units.Units.Meter;
+import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Volts;
 
 import org.ironmaple.simulation.SimulatedArena;
@@ -41,6 +45,8 @@ import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.DriveFeedforwards;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -127,6 +133,7 @@ public class RobotContainer {
     // * Odometry
     // Cameras
     this.m_limelight3G = new LimelightOdometryCamera("limelight-threeg", false, true, VisionOdometryFilters::visionFilter);
+    new PhotonOdometryCamera(null, new Transform3d(Meters.of(0.304), Meters.of(-0.288), Meters.of(-0.163), new Rotation3d(Degrees.of(0), Degrees.of(25), Degrees.of(90 - 75))), false, null);
 
     // Odometry
     this.m_odometry = new BlueShiftOdometry(
