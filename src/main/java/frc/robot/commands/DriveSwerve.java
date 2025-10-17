@@ -6,7 +6,7 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import frc.robot.Constants;
 import frc.robot.Constants.SwerveChassisConstants;
-import frc.robot.subsystems.SwerveChassis;
+import frc.robot.subsystems.SwerveChassis.SwerveChassis;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj2.command.Command;
 

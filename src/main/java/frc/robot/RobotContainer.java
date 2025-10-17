@@ -8,9 +8,12 @@ import frc.robot.commands.ScoringCommands;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.EndEffector;
-import frc.robot.subsystems.Intakexer;
+import frc.robot.subsystems.Intaxer;
 import frc.robot.subsystems.IntaxerPivot;
-import frc.robot.subsystems.SwerveChassis;
+import frc.robot.subsystems.SwerveChassis.SwerveChassis;
+import frc.robot.subsystems.SwerveChassis.SwerveChassisIOMaplesim;
+import frc.robot.subsystems.SwerveChassis.SwerveChassisIOReal;
+import frc.robot.subsystems.SwerveChassis.SwerveChassisIOSim;
 import frc.robot.subsystems.SwerveModule;
 import frc.robot.subsystems.Gyro.Gyro;
 import frc.robot.subsystems.Gyro.GyroIOPigeon;
@@ -22,8 +25,20 @@ import lib.BlueShift.control.ToggleTrigger;
 import lib.BlueShift.control.CustomController.CustomControllerType;
 import lib.BlueShift.odometry.swerve.BlueShiftOdometry;
 import lib.BlueShift.odometry.vision.camera.LimelightOdometryCamera;
+import lib.BlueShift.odometry.vision.camera.PhotonOdometryCamera;
 import lib.BlueShift.odometry.vision.camera.VisionOdometryFilters;
 
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.KilogramSquareMeters;
+import static edu.wpi.first.units.Units.Meter;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Volts;
+
+import org.ironmaple.simulation.SimulatedArena;
+import org.ironmaple.simulation.drivesims.COTS;
+import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
+import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
+import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
 import org.littletonrobotics.junction.Logger;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -31,8 +46,13 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.DriveFeedforwards;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -49,9 +69,10 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
  */
 public class RobotContainer {
   // * Controllers
-  private final CustomController DRIVER = new CustomController(Constants.OperatorConstants.kDriverControllerPort, CustomControllerType.XBOX, Constants.OperatorConstants.kDeadband, 1);
+  private final CustomController DRIVER = new CustomController(Constants.OperatorConstants.kDriverControllerPort, RobotBase.isReal() ? CustomControllerType.XBOX : CustomControllerType.PS5, Constants.OperatorConstants.kDeadband, 1);
   private final CustomController OPERATOR = new CustomController(Constants.OperatorConstants.kOperatorControllerPort, CustomControllerType.XBOX, Constants.OperatorConstants.kDeadband, 1);
 
+  private SwerveDriveSimulation chassisSim;
   private final SwerveChassis chassis;
 
   private final BlueShiftOdometry m_odometry;
@@ -59,12 +80,9 @@ public class RobotContainer {
 
   // * Subsystems
   private final Elevator elevator;
-  
   private final Arm arm;
-
   private final EndEffector endEffector;
-
-  private final Intakexer intake;
+  private final Intaxer intake;
 
   private final IntaxerPivot pivot;
 
@@ -75,17 +93,51 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    this.chassis = new SwerveChassis(
-      new SwerveModule(Constants.SwerveModuleConstants.kFrontLeftOptions),
-      new SwerveModule(Constants.SwerveModuleConstants.kFrontRightOptions),
-      new SwerveModule(Constants.SwerveModuleConstants.kBackLeftOptions),
-      new SwerveModule(Constants.SwerveModuleConstants.kBackRightOptions),
-      new Gyro(new GyroIOPigeon(Constants.SwerveChassisConstants.kGyroDevice))
-    );
+    if (RobotBase.isReal()) {
+      this.chassis = new SwerveChassis(new SwerveChassisIOReal(
+        new SwerveModule(Constants.SwerveModuleConstants.kFrontLeftOptions),
+        new SwerveModule(Constants.SwerveModuleConstants.kFrontRightOptions),
+        new SwerveModule(Constants.SwerveModuleConstants.kBackLeftOptions),
+        new SwerveModule(Constants.SwerveModuleConstants.kBackRightOptions),
+        new Gyro(new GyroIOPigeon(Constants.SwerveChassisConstants.kGyroDevice))
+      ));
+    } else {
+      // this.chassisSim = new SwerveDriveSimulation(
+      //   DriveTrainSimulationConfig.Default()
+      //     .withCustomModuleTranslations(SwerveChassisConstants.PhysicalModel.kModuleTranslations)
+      //     // .withRobotMass(null)
+      //     // .withBumperSize(null, null)
+      //     .withGyro(COTS.ofPigeon2())
+      //     .withSwerveModule(new SwerveModuleSimulationConfig(
+      //       DCMotor.getKrakenX60(1),
+      //       DCMotor.getNEO(1),
+      //       SwerveChassisConstants.PhysicalModel.kDriveMotorGearRatio,
+      //       SwerveChassisConstants.PhysicalModel.kTurningMotorGearRatio,
+      //       Volts.of(1),
+      //       Volts.of(1),
+      //       SwerveChassisConstants.PhysicalModel.kWheelDiameter,
+      //       KilogramSquareMeters.of(0.02),
+      //       1.0 // friction
+      //     )),
+      //     new Pose2d(3, 3, Rotation2d.kZero)
+      // );
+      // SimulatedArena.getInstance().addDriveTrainSimulation(chassisSim);
+
+      // this.chassis = new SwerveChassis(new SwerveChassisIOMaplesim(
+      //   chassisSim.getGyroSimulation(),
+      //   chassisSim.getModules()[0],
+      //   chassisSim.getModules()[1],
+      //   chassisSim.getModules()[2],
+      //   chassisSim.getModules()[3]
+      // ));
+
+      chassis = new SwerveChassis(new SwerveChassisIOSim());
+    }
 
     // * Odometry
     // Cameras
     this.m_limelight3G = new LimelightOdometryCamera("limelight-threeg", false, true, VisionOdometryFilters::visionFilter);
+    new PhotonOdometryCamera(null, new Transform3d(Meters.of(0.304), Meters.of(-0.288), Meters.of(-0.163), new Rotation3d(Degrees.of(0), Degrees.of(25), Degrees.of(90 - 75))), false, null);
 
     // Odometry
     this.m_odometry = new BlueShiftOdometry(
@@ -104,7 +156,7 @@ public class RobotContainer {
 
     this.endEffector = new EndEffector();
 
-    this.intake = new Intakexer();
+    this.intake = new Intaxer();
 
     this.pivot = new IntaxerPivot();
 
@@ -158,6 +210,8 @@ public class RobotContainer {
         () -> !DRIVER.bottomButton().getAsBoolean()
       )
     );
+
+    DRIVER.rightStickButton().onTrue(new InstantCommand(chassis::zeroHeading));
     
     // DRIVER.povRight().onTrue(elevator.setPostitionCommand(ElevatorPosition.L3));
     // DRIVER.povLeft().onTrue(elevator.setPostitionCommand(ElevatorPosition.L2));

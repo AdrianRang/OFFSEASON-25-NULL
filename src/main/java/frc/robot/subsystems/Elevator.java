@@ -1,23 +1,32 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.subsystems;
 
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.sim.SparkFlexSim;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
+
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.simulation.ElevatorSim;
+import edu.wpi.first.wpilibj.simulation.RoboRioSim;
+import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+// import frc.robot.Constants.ElevatorConstants.PhysicalModel;
 
+import static edu.wpi.first.units.Units.Kilograms;
+import static edu.wpi.first.units.Units.Meters;
 import static frc.robot.Constants.ElevatorConstants.*;
 
 public class Elevator extends SubsystemBase {
@@ -46,6 +55,7 @@ public class Elevator extends SubsystemBase {
 		private double position;
     
 		private ElevatorPosition(double position) {
+      // if(position > kMaxHeight || position < kMinHeight) return;
       this.position = position;
 		}
     
@@ -54,13 +64,13 @@ public class Elevator extends SubsystemBase {
 		}
 	}
   
-  // (MASTER)
+  // * (MASTER)
   private final SparkFlex leftMotor;
   private final SparkFlexConfig leftMotorConfig;
   
   private final RelativeEncoder leftEncoder;
   
-  // (SLAVE)
+  // * (SLAVE)
   private final SparkFlex rightMotor;
   private final SparkFlexConfig rightMotorConfig;
   
@@ -68,6 +78,17 @@ public class Elevator extends SubsystemBase {
   private boolean pidEnabled = false;
 
   private final CANcoder absoluteEncoder;
+
+  // * SIMULATION
+  private SparkFlexSim leftMotorSim;
+  private SparkFlexSim rightMotorSim;
+
+  private ElevatorSim elevatorSim;
+
+  // * Visualization
+  private final Mechanism2d mechanism;
+  private final MechanismRoot2d mechRoot;
+  private final MechanismLigament2d ligament;
   
   /** Creates a new Elevator. */
   public Elevator() {
@@ -85,6 +106,7 @@ public class Elevator extends SubsystemBase {
     // // TO DO: Encoder is not configured
     // ? Leave it like this?
     // * Yes
+    // nice
     
     this.leftMotor.configure(leftMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
 
@@ -104,6 +126,28 @@ public class Elevator extends SubsystemBase {
     this.rightMotor.configure(rightMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
 
     this.absoluteEncoder = new CANcoder(kEncoderId);
+
+    // * Create simulation (when simulating)
+    if (RobotBase.isSimulation()) {
+      this.leftMotorSim = new SparkFlexSim(leftMotor, DCMotor.getNeoVortex(1));
+      this.rightMotorSim = new SparkFlexSim(rightMotor, DCMotor.getNeoVortex(1));
+
+      // this.elevatorSim = new ElevatorSim(
+      //   DCMotor.getNeoVortex(2),
+      //   PhysicalModel.gearing,
+      //   PhysicalModel.carriageMass.in(Kilograms),
+      //   PhysicalModel.spoolDiameter.in(Meters),
+      //   kMinHeight.in(Meters),
+      //   kMaxHeight.in(Meters),
+      //   true,
+      //   kMinHeight.in(Meters)
+      // );
+    }
+
+    // * Visualization
+    this.mechanism = new Mechanism2d(3, kMaxHeight, new Color8Bit(255, 255, 255));
+    this.mechRoot = mechanism.getRoot("ElevatorRoot", 1.5, kMinHeight);
+    this.ligament = mechRoot.append(new MechanismLigament2d("ElevatorLigament", 0, 90, 20, new Color8Bit(0, 0, 255)));
 
     // Log position setpoints for debugging
     for(ElevatorPosition pos : ElevatorPosition.values()) {
@@ -144,16 +188,6 @@ public class Elevator extends SubsystemBase {
     leftMotor.setVoltage(voltage);
   }
 
-  //? Removed because we changed to ProfiledPidContoller instead of integrated spark encoder
-  /*
-   * Sets the goal position for the elevator
-   * @param position The setpoint position of the elevator in meters
-   */
-  // private void setPosition(double position) {
-  //   if(position > kMaxHeight || position < kMinHeight) return;
-  //   pid.setReference(position, ControlType.kPosition);
-  // }
-
   public void setSetpoint(ElevatorPosition position) {
     pidController.reset(getEncoderPosition());
     pidEnabled = true;
@@ -181,15 +215,33 @@ public class Elevator extends SubsystemBase {
   public void resetPID() {
     pidController.reset(getEncoderPosition());
   }
+  
+  @Override
+  public void simulationPeriodic() {
+    elevatorSim.setInput(leftMotor.getAppliedOutput() * RoboRioSim.getVInVoltage());
+    elevatorSim.update(0.02);
+
+    leftMotorSim.iterate(elevatorSim.getVelocityMetersPerSecond() / kRotationToHeightRatio, RoboRioSim.getVInVoltage(), 0.02);
+
+    SmartDashboard.putNumber("Elevator/SimPosition", elevatorSim.getPositionMeters());
+    ligament.setLength(elevatorSim.getPositionMeters());
+  }
  
   @Override
   public void periodic() {
-    double pidResult = pidController.calculate(getEncoderPosition(), setpoint.getPosition());
+    double encoderPosition = getEncoderPosition();
+    double pidResult = pidController.calculate(encoderPosition, setpoint.getPosition());
     // ? setpoint should be passed instead of pid value to ff?
     // ! No ff is velocity controller
     double ffResult = feedforward.calculate(0);
 
     if (pidEnabled) leftMotor.setVoltage(pidResult);
+
+    // Update visualization
+    // ligament.setLength(encoderPosition * kRotationToHeightRatio);
+
+    SmartDashboard.putData("Elevator/Mechanism", mechanism);
+
     // if (pidEnabled) leftMotor.setVoltage(ffResult/10.0);
     SmartDashboard.putNumber("Elevator/RawPosition", leftEncoder.getPosition());
     SmartDashboard.putNumber("Elevator/Position", getEncoderPosition());

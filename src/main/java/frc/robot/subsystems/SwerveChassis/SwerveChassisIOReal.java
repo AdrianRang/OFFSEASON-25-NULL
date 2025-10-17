@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.SwerveChassis;
 
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
@@ -8,16 +8,18 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.LimelightHelpers;
+import frc.robot.subsystems.SwerveModule;
 import frc.robot.subsystems.Gyro.Gyro;
 import lib.BlueShift.control.SpeedAlterator;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import org.littletonrobotics.junction.Logger;
 
-public class SwerveChassis extends SubsystemBase {
+public class SwerveChassisIOReal implements SwerveChassisIO {
     // * Swerve modules
     public final SwerveModule frontLeft;
     public final SwerveModule frontRight;
@@ -42,7 +44,7 @@ public class SwerveChassis extends SubsystemBase {
      * @param backRight Back Right Swerve Module
      * @param gyro Gyroscope
      */
-    public SwerveChassis(SwerveModule frontLeft, SwerveModule frontRight, SwerveModule backLeft, SwerveModule backRight, Gyro gyro) {
+    public SwerveChassisIOReal(SwerveModule frontLeft, SwerveModule frontRight, SwerveModule backLeft, SwerveModule backRight, Gyro gyro) {
         // Store the modules
         this.frontLeft = frontLeft;
         this.frontRight = frontRight;
@@ -57,8 +59,6 @@ public class SwerveChassis extends SubsystemBase {
 
         //! ENCODERS ARE RESET IN EACH MODULE
         //! DO NOT RESET THEM HERE IN THE CONSTRUCTOR
-
-        SmartDashboard.putData("ZeroHeading", new InstantCommand(this::zeroHeading));
     }
 
     /**

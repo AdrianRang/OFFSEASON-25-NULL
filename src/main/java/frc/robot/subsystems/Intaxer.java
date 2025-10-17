@@ -22,7 +22,7 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 
-public class Intakexer extends SubsystemBase {
+public class Intaxer extends SubsystemBase {
   private final SparkMax intakeMotor;
   private final SparkMaxConfig intakeMotorConfig;
   private final SparkMax indexMotor;
@@ -32,7 +32,7 @@ public class Intakexer extends SubsystemBase {
 
   private final CANrange checkSensor;
 
-  public Intakexer() {
+  public Intaxer() {
     intakeMotor = new SparkMax(kIntakeMotorId, MotorType.kBrushless);
     intakeMotorConfig = new SparkMaxConfig();
     intakeMotorConfig

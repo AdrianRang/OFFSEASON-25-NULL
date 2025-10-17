@@ -55,7 +55,7 @@ public class Robot extends LoggedRobot {
     LiveWindow.disableAllTelemetry();
 
     // * DISABLE PHOENIX LOGGING
-  SignalLogger.enableAutoLogging(false);
+    SignalLogger.enableAutoLogging(false);
     SignalLogger.stop();
 
     // * Cameras port forwarding over USB
@@ -179,5 +179,7 @@ public class Robot extends LoggedRobot {
 
   /** This function is called periodically whilst in simulation. */
   @Override
-  public void simulationPeriodic() {}
+  public void simulationPeriodic() {
+    SimulatedArena.getInstance().simulationPeriodic();
+  }
 }
