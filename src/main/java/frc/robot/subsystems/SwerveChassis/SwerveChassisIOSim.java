@@ -190,6 +190,10 @@ public class SwerveChassisIOSim implements SwerveChassisIO {
         Logger.recordOutput("SwerveDrive/SwerveModuleStates", this.getModuleRealStates());
     }
 
+    public double getDip() {
+        return 0.0;
+    }
+
     public class SwerveModuleSim extends SubsystemBase {
         // Swerve module name
         private final String m_name;

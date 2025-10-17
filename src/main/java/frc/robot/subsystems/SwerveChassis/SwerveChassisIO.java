@@ -38,6 +38,8 @@ public interface SwerveChassisIO {
     public void resetTurningEncoders();
     public void resetDriveEncoders();
 
+    public double getDip();
+
     public default void resetEncoders() {
         resetTurningEncoders();
         resetDriveEncoders();

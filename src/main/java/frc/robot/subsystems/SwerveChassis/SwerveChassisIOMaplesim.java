@@ -195,6 +195,10 @@ public class SwerveChassisIOMaplesim implements SwerveChassisIO {
         backRight.resetTurnEncoder();
     }
 
+    public double getDip() {
+        return 0.0;
+    }
+
     public class SwerveModuleMaplesim extends SubsystemBase {
         private final SwerveModuleSimulation moduleSimulation;
         private final SimulatedMotorController.GenericMotorController driveMotor;

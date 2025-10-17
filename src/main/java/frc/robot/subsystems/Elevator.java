@@ -23,7 +23,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.ElevatorConstants.PhysicalModel;
+// import frc.robot.Constants.ElevatorConstants.PhysicalModel;
 
 import static edu.wpi.first.units.Units.Kilograms;
 import static edu.wpi.first.units.Units.Meters;
@@ -132,21 +132,21 @@ public class Elevator extends SubsystemBase {
       this.leftMotorSim = new SparkFlexSim(leftMotor, DCMotor.getNeoVortex(1));
       this.rightMotorSim = new SparkFlexSim(rightMotor, DCMotor.getNeoVortex(1));
 
-      this.elevatorSim = new ElevatorSim(
-        DCMotor.getNeoVortex(2),
-        PhysicalModel.gearing,
-        PhysicalModel.carriageMass.in(Kilograms),
-        PhysicalModel.spoolDiameter.in(Meters),
-        kMinHeight.in(Meters),
-        kMaxHeight.in(Meters),
-        true,
-        kMinHeight.in(Meters)
-      );
+      // this.elevatorSim = new ElevatorSim(
+      //   DCMotor.getNeoVortex(2),
+      //   PhysicalModel.gearing,
+      //   PhysicalModel.carriageMass.in(Kilograms),
+      //   PhysicalModel.spoolDiameter.in(Meters),
+      //   kMinHeight.in(Meters),
+      //   kMaxHeight.in(Meters),
+      //   true,
+      //   kMinHeight.in(Meters)
+      // );
     }
 
     // * Visualization
-    this.mechanism = new Mechanism2d(3, kMaxHeight.in(Meters), new Color8Bit(255, 255, 255));
-    this.mechRoot = mechanism.getRoot("ElevatorRoot", 1.5, kMinHeight.in(Meters));
+    this.mechanism = new Mechanism2d(3, kMaxHeight, new Color8Bit(255, 255, 255));
+    this.mechRoot = mechanism.getRoot("ElevatorRoot", 1.5, kMinHeight);
     this.ligament = mechRoot.append(new MechanismLigament2d("ElevatorLigament", 0, 90, 20, new Color8Bit(0, 0, 255)));
 
     // Log position setpoints for debugging

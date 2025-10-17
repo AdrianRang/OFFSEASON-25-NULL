@@ -94,6 +94,10 @@ public class SwerveChassis extends SubsystemBase implements SwerveChassisIO {
     io.resetEncoders();
   }
 
+  public double getDip() {
+    return io.getDip();
+  }
+
   // ! COMMANDS
   /**
    * Resets the gyroscope
