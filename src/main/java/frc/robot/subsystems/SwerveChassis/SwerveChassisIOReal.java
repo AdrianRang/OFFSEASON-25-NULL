@@ -69,6 +69,10 @@ public class SwerveChassisIOReal implements SwerveChassisIO {
         return gyro.getHeading();
     }
 
+    public double getDip() {
+        return Math.max(gyro.getYaw(), gyro.getRoll());
+    }
+
     /**
      * Zero the heading of the robot (reset the gyro)
      */

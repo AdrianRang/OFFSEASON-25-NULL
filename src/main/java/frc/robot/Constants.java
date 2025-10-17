@@ -8,7 +8,6 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.measure.Angle;
@@ -17,7 +16,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
-import edu.wpi.first.units.measure.Mass;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Elevator.ElevatorPosition;
 import frc.robot.subsystems.Arm.ArmPosition;
@@ -100,8 +99,8 @@ public final class Constants {
       public static final Distance kWheelBase = Inches.of(26);
 
       // Create a kinematics instance with the positions of the swerve modules
-      public static final Translation2d[] kModuleTranslations = SwerveChassis.sizeToModulePositions(kTrackWidth.in(Meters), kWheelBase.in(Meters));
-      public static final SwerveDriveKinematics kDriveKinematics = new SwerveDriveKinematics(kModuleTranslations);
+      public static final SwerveDriveKinematics kDriveKinematics = new SwerveDriveKinematics(
+          SwerveChassis.sizeToModulePositions(kTrackWidth.in(Meters), kWheelBase.in(Meters)));
 
       // Path constraints
       public static final PathConstraints kPathConstraints = new PathConstraints(kMaxSpeed, kMaxAcceleration,
@@ -179,16 +178,10 @@ public final class Constants {
     public static final double kMotorRampRate = 0.0;
     public static final int kMototCurrentLimit = 40;
 
-    public static final Distance kMaxHeight = Meters.of(2.5); // Meters
-    public static final Distance kMinHeight = Meters.of(0); // Meters
-    public static final double kRotationToHeightRatio = kMaxHeight.in(Meters) / 35.0; // Rotations to meters
+    public static final double kMaxHeight = 2.5; // Meters
+    public static final double kMinHeight = 0; // Meters
+    public static final double kRotationToHeightRatio = kMaxHeight / 35.0; // Rotations to meters
     public static final double kPositionEpsilon = 1;
-
-    public final class PhysicalModel {
-      public static final double gearing = 20.0;
-      public static final Distance spoolDiameter = Inches.of(1);
-      public static final Mass carriageMass = Pounds. of(20);
-    }
 
     // PID controller
     public static final ProfiledPIDController pidController = new ProfiledPIDController(
@@ -201,8 +194,8 @@ public final class Constants {
     // Feedforward
     // TODO: CAREFULY CHECK THE BEHAVIOR OF THE ELEVATOR WITH FF
     // TODO: Tune kS manually, to tune it, set all other values to 0, then slowly increase the value until the elevator moves ever so slightly
-    // Calculated with: https://www.reca.lc/linear?angle=%7B%22s%22%3A90%2C%22u%22%3A%22deg%22%7D&currentLimit=%7B%22s%22%3A40%2C%22u%22%3A%22A%22%7D&efficiency=90&limitAcceleration=0&limitDeceleration=0&limitVelocity=0&limitedAcceleration=%7B%22s%22%3A400%2C%22u%22%3A%22in%2Fs2%22%7D&limitedDeceleration=%7B%22s%22%3A50%2C%22u%22%3A%22in%2Fs2%22%7D&limitedVelocity=%7B%22s%22%3A10%2C%22u%22%3A%22in%2Fs%22%7D&load=%7B%22s%22%3A20%2C%22u%22%3A%22lbs%22%7D&motor=%7B%22quantity%22%3A2%2C%22name%22%3A%22NEO%20Vortex%2A%22%7D&ratio=%7B%22magnitude%22%3A20%2C%22ratioType%22%3A%22Reduction%22%7D&spoolDiameter=%7B%22s%22%3A1%2C%22u%22%3A%22in%22%7D&travelDistance=%7B%22s%22%3A2.5%2C%22u%22%3A%22m%22%7D
-    public static final ElevatorFeedforward feedforward = new ElevatorFeedforward(0.0, 0.08, 26.60);
+    // Calculated with: https://www.reca.lc/linear?angle=%7B%22s%22:90,%22u%22:%22deg%22%7D&currentLimit=%7B%22s%22:40,%22u%22:%22A%22%7D&efficiency=90&limitAcceleration=0&limitDeceleration=0&limitVelocity=0&limitedAcceleration=%7B%22s%22:400,%22u%22:%22in/s2%22%7D&limitedDeceleration=%7B%22s%22:50,%22u%22:%22in/s2%22%7D&limitedVelocity=%7B%22s%22:10,%22u%22:%22in/s%22%7D&load=%7B%22s%22:20,%22u%22:%22lbs%22%7D&motor=%7B%22quantity%22:2,%22name%22:%22NEO%20Vortex*%22%7D&ratio=%7B%22magnitude%22:20,%22ratioType%22:%22Reduction%22%7D&spoolDiameter=%7B%22s%22:1,%22u%22:%22in%22%7D&travelDistance=%7B%22s%22:2.5,%22u%22:%22m%22%7D
+    public static final ElevatorFeedforward feedforward = new ElevatorFeedforward(0.75, 0.4, 9.21);
   }
 
   public static final class ArmConstants {
@@ -218,8 +211,6 @@ public final class Constants {
     // Angle limits
     public static final Angle kMin = Degrees.of(15);
     public static final Angle kMax = Degrees.of(180);
-
-    public static final Angle kOAngleffset = Degrees.of(-90);
 
     public static final Angle kRotationEpsilon = Degrees.of(5);
 
@@ -254,12 +245,9 @@ public final class Constants {
     }
 
     public static final class AlgeaConstants {
-      public static final double intakeCurrent = -8;
-      public static final double outakeCurrent = 10;
-
-      public static final double intakeSpeed = -0.5;
-      public static final double outakeSpeed = 0.5;
-      public static final double holdSpeed = -0.1;
+      public static final double intakeSpeed = 0.5;
+      public static final double outakeSpeed = -0.8;
+      public static final double holdSpeed = 0.1;
 
       public static final double checkCurrent = 10;
 
@@ -304,6 +292,27 @@ public final class Constants {
     public static final double kPassSpeed = -0.4;
 
     public static final double kEjectSpeed = 0.5; 
+
+    public static final class PivotConstants {
+      public static final int kMotorId = 32;
+      public static final int kEncoderId = 33;
+
+      public static final int kMotorCurrentLimit = 40;
+      public static final int kMotorLowerCurrentLimit = 30;
+      public static final double kMotorRampRate = 0.0;
+
+      public static final double kDownPos = 0.08;
+      public static final double kUpPos = -0.28;
+      public static final double kEpsilon = 0.01;
+
+      public static final ProfiledPIDController pid = new ProfiledPIDController(
+        6.0,
+        0.6,
+        0.0,
+        new TrapezoidProfile.Constraints(10.0, 2.0));
+
+      public static final ArmFeedforward feedforward = new ArmFeedforward(0.4, 0.72, 1.86, 0.15);
+    }
   }
 
   public static final double startupStatusSignalTimeout = 20;
