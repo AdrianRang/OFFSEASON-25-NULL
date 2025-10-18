@@ -24,8 +24,6 @@ import lib.BlueShift.odometry.swerve.BlueShiftOdometry;
 import lib.BlueShift.odometry.vision.camera.LimelightOdometryCamera;
 import lib.BlueShift.odometry.vision.camera.VisionOdometryFilters;
 
-import org.littletonrobotics.junction.Logger;
-
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
@@ -155,13 +153,9 @@ public class RobotContainer {
         () -> -DRIVER.getLeftY(),
         () -> -DRIVER.getLeftX(),
         () -> DRIVER.getLeftTrigger() - DRIVER.getRightTrigger(),
-        () -> !DRIVER.bottomButton().getAsBoolean()
+        () -> true
       )
     );
-    
-    // DRIVER.povRight().onTrue(elevator.setPostitionCommand(ElevatorPosition.L3));
-    // DRIVER.povLeft().onTrue(elevator.setPostitionCommand(ElevatorPosition.L2));
-    // DRIVER.povDown().onTrue(elevator.setPostitionCommand(ElevatorPosition.L1));
 
     // ! OPERATOR
     // Algae
@@ -218,14 +212,15 @@ public class RobotContainer {
     DRIVER.povRight().and(algaeMode).onTrue(ScoringCommands.setRobotState(RobotState.L2_ALGAE, arm, elevator));
     
     DRIVER.povDown().onTrue(ScoringCommands.setRobotState(RobotState.HOME, arm, elevator));
+    DRIVER.bottomButton().onTrue(ScoringCommands.setRobotState(RobotState.HOME, arm, elevator));
 
     OPERATOR.backButton().onTrue(pivot.setDownCommand());
     OPERATOR.startButton().onTrue(pivot.setUpCommand());
 
     //! TEST
     // Auto lower elevator when dipping
-    Trigger dipping = new Trigger(()->chassis.getDip()<45);
-    Logger.recordOutput("dipping", dipping);
+    // Trigger dipping = new Trigger(()->chassis.getDip()<45);
+    // Logger.recordOutput("dipping", dipping);
     // dipping.whileTrue(ScoringCommands.setRobotState(RobotState.HOME, arm, elevator));
   }
 

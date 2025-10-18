@@ -16,7 +16,6 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Elevator.ElevatorPosition;
 import frc.robot.subsystems.Arm.ArmPosition;
@@ -302,7 +301,7 @@ public final class Constants {
       public static final double kMotorRampRate = 0.0;
 
       public static final double kDownPos = 0.08;
-      public static final double kUpPos = -0.28;
+      public static final double kUpPos = -0.3;
       public static final double kEpsilon = 0.01;
 
       public static final ProfiledPIDController pid = new ProfiledPIDController(

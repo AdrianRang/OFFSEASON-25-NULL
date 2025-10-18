@@ -1,0 +1,43 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Outer-Reef_I"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Score"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "REEF_I-ALGAE"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "WAIT_CORAL"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "REEFI_A-out"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

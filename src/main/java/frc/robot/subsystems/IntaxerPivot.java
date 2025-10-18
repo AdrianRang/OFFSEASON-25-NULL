@@ -28,7 +28,7 @@ public class IntaxerPivot extends SubsystemBase {
   private final TalonFXConfiguration motorConfig;
   private final CANcoder encoder;
 
-  private double setpoint = 0;
+  private double setpoint = kDownPos;
 
   public IntaxerPivot() {
     motor = new TalonFX(kMotorId);

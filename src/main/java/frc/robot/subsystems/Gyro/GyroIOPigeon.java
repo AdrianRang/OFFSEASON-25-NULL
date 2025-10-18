@@ -51,7 +51,7 @@ public class GyroIOPigeon implements GyroIO {
     }
 
     public Rotation2d getHeading() {
-        return gyro.getRotation2d();
+        return gyro.getRotation2d().plus(Rotation2d.kCW_90deg);
     }
     
     public void reset() {

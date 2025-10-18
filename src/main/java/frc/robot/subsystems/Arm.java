@@ -29,14 +29,15 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Arm extends SubsystemBase {
   public static enum ArmPosition {
-    INTAKE(Degrees.of(160)),
-    IDLE(Degrees.of(140)),
-    PLACE_L2(Degrees.of(43)),
-    PLACE_L3(Degrees.of(37)),
-    PLACE_L4(Degrees.of(50)),
-    PLACE_L1(Degrees.of(62)),
-    ALGAE(Degrees.of(140)),
-    NET(Degrees.of(20));
+    INTAKE(Degrees.of(190)),
+    IDLE(Degrees.of(170)),
+    PLACE_L1(Degrees.of(102)),
+    PLACE_L2(Degrees.of(78)),
+    PLACE_L3(Degrees.of(72)),
+    PLACE_L4(Degrees.of(90)),
+    ALGAE(Degrees.of(180)),
+    NET(Degrees.of(60)),
+    PROCESSOR(Degrees.of(160));
 
     private Angle position;
     private ArmPosition(Angle position) {
